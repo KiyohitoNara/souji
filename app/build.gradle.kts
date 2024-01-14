@@ -24,6 +24,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinKapt)
+    alias(libs.plugins.hiltAndroid)
 }
 
 android {
@@ -37,7 +39,7 @@ android {
         versionCode = 1
         versionName = "0.0.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "io.github.kiyohitonara.souji.CustomTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -66,12 +68,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/**/*"
         }
     }
 }
 
 dependencies {
-
+    implementation(libs.hilt)
+    kapt(libs.hilt.compiler)
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -86,6 +90,12 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.hilt.testing)
+    kaptAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+}
+
+kapt {
+    correctErrorTypes = true
 }
