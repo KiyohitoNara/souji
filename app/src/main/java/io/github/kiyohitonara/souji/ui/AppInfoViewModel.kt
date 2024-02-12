@@ -20,30 +20,29 @@
  * SOFTWARE.
  */
 
-package io.github.kiyohitonara.souji.di
+package io.github.kiyohitonara.souji.ui
 
-import android.content.Context
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
-import javax.inject.Singleton
+import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
+import javax.inject.Inject
 
-@Module
-@InstallIn(SingletonComponent::class)
-object AppModule {
-    @Singleton
-    @Provides
-    fun provideDeviceDataSource(@ApplicationContext context: Context): AppInfoDeviceDataSource {
-        return AppInfoDeviceDataSource(context)
-    }
+@HiltViewModel
+class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
+    protected val _apps: MutableStateFlow<List<AppInfo>> = MutableStateFlow(emptyList())
+    val apps: StateFlow<List<AppInfo>> = _apps
 
-    @Singleton
-    @Provides
-    fun provideRepository(deviceDataSource: AppInfoDeviceDataSource): AppInfoRepository {
-        return AppInfoRepository(deviceDataSource)
+    override fun onResume(owner: LifecycleOwner) {
+        super.onResume(owner)
+
+        Timber.d("Lifecycle is resumed")
+
+        _apps.value = repository.getApps()
     }
 }
