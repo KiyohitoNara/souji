@@ -22,4 +22,5 @@
 
 <resources>
     <string name="app_name">Souji</string>
+    <string name="unknown_app">Unknown app</string>
 </resources>

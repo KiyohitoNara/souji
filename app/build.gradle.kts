@@ -76,6 +76,7 @@ android {
 dependencies {
     implementation(libs.hilt)
     kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -88,6 +89,7 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
+    implementation(libs.accompanist.drawablepainter)
     implementation(libs.timber)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

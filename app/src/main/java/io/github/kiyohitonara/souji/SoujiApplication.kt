@@ -23,8 +23,10 @@
 package io.github.kiyohitonara.souji
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
+@HiltAndroidApp
 class SoujiApplication : Application() {
     override fun onCreate() {
         super.onCreate()
