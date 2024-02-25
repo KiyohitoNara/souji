@@ -20,25 +20,13 @@
  * SOFTWARE.
  */
 
-package io.github.kiyohitonara.souji.model
+package io.github.kiyohitonara.souji.data
 
-import android.graphics.drawable.Drawable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import io.github.kiyohitonara.souji.model.AppInfo
 
-@Entity(tableName = "app_info")
-data class AppInfo(
-    @PrimaryKey
-    @ColumnInfo(name = "package_name")
-    val packageName: String,
-    @Ignore
-    val label: String?,
-    @Ignore
-    val icon: Drawable?,
-    @ColumnInfo(name = "is_enabled")
-    val isEnabled: Boolean = false,
-) {
-    constructor(packageName: String, isEnabled: Boolean) : this(packageName, null, null, isEnabled)
+@Database(entities = [AppInfo::class], version = 1, exportSchema = false)
+public abstract class AppDatabase : RoomDatabase() {
+    abstract fun appInfoDao(): AppInfoDao
 }
