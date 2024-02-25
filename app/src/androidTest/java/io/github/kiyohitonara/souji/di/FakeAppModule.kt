@@ -31,6 +31,8 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import io.github.kiyohitonara.souji.data.AppDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDao
+import io.github.kiyohitonara.souji.data.AppInfoDataSource
+import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import javax.inject.Singleton
@@ -50,6 +52,13 @@ object FakeAppModule {
     @Provides
     fun provideAppInfoDao(appDatabase: AppDatabase): AppInfoDao {
         return appDatabase.appInfoDao()
+    }
+
+    @Singleton
+    @Provides
+    @DatabaseDataSource
+    fun provideDatabaseDataSource(dao: AppInfoDao): AppInfoDataSource {
+        return AppInfoDatabaseDataSource(dao)
     }
 
     @Singleton

@@ -31,9 +31,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.kiyohitonara.souji.data.AppDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDao
+import io.github.kiyohitonara.souji.data.AppInfoDataSource
+import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
 import io.github.kiyohitonara.souji.data.AppInfoRepository
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+annotation class DatabaseDataSource
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -48,6 +54,13 @@ object AppModule {
     @Provides
     fun provideAppInfoDao(appDatabase: AppDatabase): AppInfoDao {
         return appDatabase.appInfoDao()
+    }
+
+    @Singleton
+    @Provides
+    @DatabaseDataSource
+    fun provideDatabaseDataSource(dao: AppInfoDao): AppInfoDataSource {
+        return AppInfoDatabaseDataSource(dao)
     }
 
     @Singleton
