@@ -41,6 +41,9 @@ import javax.inject.Singleton
 @Qualifier
 annotation class DatabaseDataSource
 
+@Qualifier
+annotation class DeviceDataSource
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -65,13 +68,14 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideDeviceDataSource(@ApplicationContext context: Context): AppInfoDeviceDataSource {
+    @DeviceDataSource
+    fun provideDeviceDataSource(@ApplicationContext context: Context): AppInfoDataSource {
         return AppInfoDeviceDataSource(context)
     }
 
     @Singleton
     @Provides
-    fun provideRepository(deviceDataSource: AppInfoDeviceDataSource): AppInfoRepository {
-        return AppInfoRepository(deviceDataSource)
+    fun provideRepository(@DeviceDataSource dataSource: AppInfoDataSource): AppInfoRepository {
+        return AppInfoRepository(dataSource)
     }
 }

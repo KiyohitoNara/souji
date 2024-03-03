@@ -29,6 +29,8 @@ import androidx.lifecycle.LifecycleRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -57,12 +59,12 @@ class AppInfoViewModelTest {
     }
 
     @Test
-    fun testOnResume() {
+    fun testOnResume() = runBlocking {
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
         registry.addObserver(viewModel)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
-        assertTrue("apps size is ${viewModel.apps.value.size}.", viewModel.apps.value.isNotEmpty())
+        assertTrue("apps size is ${viewModel.apps.first().size}.", viewModel.apps.first().isNotEmpty())
     }
 }

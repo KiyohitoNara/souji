@@ -23,13 +23,14 @@
 package io.github.kiyohitonara.souji.data
 
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import javax.inject.Inject
 
-class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDeviceDataSource) {
-    fun getApps(): List<AppInfo> {
+class AppInfoRepository @Inject constructor(private val dataSource: AppInfoDataSource) {
+    fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps")
 
-        return deviceDataSource.getApps()
+        return dataSource.getApps()
     }
 }

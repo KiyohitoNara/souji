@@ -26,6 +26,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -44,9 +46,16 @@ class AppInfoDeviceDataSourceTest {
     }
 
     @Test
-    fun testGetApps() {
-        val apps = dataSource.getApps()
+    fun testGetApps() = runBlocking {
+        val apps = dataSource.getApps().last()
 
         assertTrue("apps size is ${apps.size}.", apps.isNotEmpty())
+    }
+
+    @Test(expected = UnsupportedOperationException::class)
+    fun testUpsertApp() = runBlocking {
+        val appInfo = dataSource.getApps().last().first()
+
+        dataSource.upsertApp(appInfo)
     }
 }

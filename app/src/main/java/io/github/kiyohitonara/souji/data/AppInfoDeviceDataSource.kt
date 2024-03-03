@@ -25,10 +25,12 @@ package io.github.kiyohitonara.souji.data
 import android.content.Context
 import android.content.pm.PackageManager
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 
-class AppInfoDeviceDataSource(private val context: Context) {
-    fun getApps(): List<AppInfo> {
+class AppInfoDeviceDataSource(private val context: Context) : AppInfoDataSource {
+    override fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps from device")
 
         val apps = mutableListOf<AppInfo>()
@@ -47,6 +49,10 @@ class AppInfoDeviceDataSource(private val context: Context) {
             apps.add(appInfo)
         }
 
-        return apps
+        return flowOf(apps)
+    }
+
+    override suspend fun upsertApp(appInfo: AppInfo) {
+        throw UnsupportedOperationException("Device data source does not support upserting apps")
     }
 }

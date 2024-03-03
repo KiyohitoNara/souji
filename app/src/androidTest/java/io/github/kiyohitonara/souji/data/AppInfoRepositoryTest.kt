@@ -24,6 +24,8 @@ package io.github.kiyohitonara.souji.data
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -44,8 +46,8 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun testGetApps() {
-        val apps = repository.getApps()
+    fun testGetApps() = runBlocking {
+        val apps = repository.getApps().last()
 
         assertTrue("apps size is ${apps.size}.", apps.isNotEmpty())
     }
