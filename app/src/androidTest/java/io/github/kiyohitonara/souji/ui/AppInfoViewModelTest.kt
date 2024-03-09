@@ -29,8 +29,11 @@ import androidx.lifecycle.LifecycleRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
+import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -66,5 +69,16 @@ class AppInfoViewModelTest {
         registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
         assertTrue("apps size is ${viewModel.apps.first().size}.", viewModel.apps.first().isNotEmpty())
+    }
+
+    @Test
+    fun testUpsertApp() = runBlocking {
+        val appInfo = AppInfo("io.github.kiyohitonara.souji", true)
+        viewModel.upsertApp(appInfo)
+
+        delay(1000)
+
+        val apps = viewModel.apps.value.filter { it.isEnabled }
+        Assert.assertEquals(1, apps.size)
     }
 }

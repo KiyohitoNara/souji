@@ -75,7 +75,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRepository(@DeviceDataSource dataSource: AppInfoDataSource): AppInfoRepository {
-        return AppInfoRepository(dataSource)
+    fun provideRepository(@DeviceDataSource deviceDataSource: AppInfoDataSource, @DatabaseDataSource databaseDataSource: AppInfoDataSource): AppInfoRepository {
+        return AppInfoRepository(deviceDataSource, databaseDataSource)
     }
 }

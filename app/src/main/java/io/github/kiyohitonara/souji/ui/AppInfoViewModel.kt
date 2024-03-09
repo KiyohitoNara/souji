@@ -25,10 +25,10 @@ package io.github.kiyohitonara.souji.ui
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,12 +37,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
-    protected val _apps: StateFlow<List<AppInfo>> = repository.getApps().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    protected val _apps: StateFlow<List<AppInfo>> = repository.getApps().stateIn(GlobalScope, SharingStarted.Eagerly, emptyList())
     val apps: StateFlow<List<AppInfo>> = _apps
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
 
         Timber.d("Lifecycle is resumed")
+    }
+
+    suspend fun upsertApp(appInfo: AppInfo) {
+        Timber.d("Upserting app: $appInfo")
+
+        repository.upsertApp(appInfo)
     }
 }

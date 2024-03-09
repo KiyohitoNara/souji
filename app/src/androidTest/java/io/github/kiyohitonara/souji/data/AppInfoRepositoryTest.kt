@@ -24,8 +24,10 @@ package io.github.kiyohitonara.souji.data
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.flow.last
+import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -47,8 +49,17 @@ class AppInfoRepositoryTest {
 
     @Test
     fun testGetApps() = runBlocking {
-        val apps = repository.getApps().last()
+        val apps = repository.getApps().first()
 
         assertTrue("apps size is ${apps.size}.", apps.isNotEmpty())
+    }
+
+    @Test
+    fun testUpsertApp() = runBlocking {
+        val appInfo = AppInfo("io.github.kiyohitonara.souji", true)
+        repository.upsertApp(appInfo)
+
+        val apps = repository.getApps().first().filter { it.isEnabled }
+        Assert.assertEquals(1, apps.size)
     }
 }
