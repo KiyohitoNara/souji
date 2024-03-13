@@ -33,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -93,18 +94,19 @@ fun AppInfoListScreen(viewModel: AppInfoViewModel) {
                 modifier = Modifier.testTag("AppInfoList"),
                 contentPadding = padding,
                 content = {
-                    items(apps) {
+                    items(apps) { app ->
                         ListItem(
+                            modifier = Modifier.testTag("ListItem-${app.packageName}"),
                             headlineContent = {
                                 Text(
-                                    text = it.label ?: stringResource(id = R.string.unknown_app),
+                                    text = app.label ?: stringResource(id = R.string.unknown_app),
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1,
                                 )
                             },
                             supportingContent = {
                                 Text(
-                                    text = it.packageName,
+                                    text = app.packageName,
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1,
                                 )
@@ -112,8 +114,17 @@ fun AppInfoListScreen(viewModel: AppInfoViewModel) {
                             leadingContent = {
                                 Image(
                                     modifier = Modifier.size(40.dp),
-                                    painter = rememberDrawablePainter(drawable = it.icon),
-                                    contentDescription = it.label,
+                                    painter = rememberDrawablePainter(drawable = app.icon),
+                                    contentDescription = app.label,
+                                )
+                            },
+                            trailingContent = {
+                                Switch(
+                                    modifier = Modifier.testTag("Switch-${app.packageName}"),
+                                    checked = app.isEnabled,
+                                    onCheckedChange = { checked ->
+                                        viewModel.upsertApp(app.copy(isEnabled = checked))
+                                    },
                                 )
                             }
                         )

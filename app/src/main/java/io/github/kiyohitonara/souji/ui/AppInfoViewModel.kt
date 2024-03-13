@@ -28,10 +28,13 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -46,9 +49,11 @@ class AppInfoViewModel @Inject constructor(private val repository: AppInfoReposi
         Timber.d("Lifecycle is resumed")
     }
 
-    suspend fun upsertApp(appInfo: AppInfo) {
+    fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: $appInfo")
 
-        repository.upsertApp(appInfo)
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.upsertApp(appInfo)
+        }
     }
 }

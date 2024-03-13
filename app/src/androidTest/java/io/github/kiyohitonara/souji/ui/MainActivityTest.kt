@@ -23,9 +23,13 @@
 package io.github.kiyohitonara.souji.ui
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -81,5 +85,10 @@ class MainActivityTest {
                     "apps size is ${this.fetchSemanticsNodes().size}.", this.fetchSemanticsNodes().isNotEmpty()
                 )
             }
+
+        composeTestRule.onNodeWithTag("AppInfoList").performScrollToNode(hasTestTag("ListItem-io.github.kiyohitonara.souji"))
+        composeTestRule.onNodeWithTag("ListItem-io.github.kiyohitonara.souji").assertExists()
+        composeTestRule.onNodeWithTag("Switch-io.github.kiyohitonara.souji").assertExists()
+        composeTestRule.onNodeWithTag("Switch-io.github.kiyohitonara.souji").performClick().assertIsOn()
     }
 }
