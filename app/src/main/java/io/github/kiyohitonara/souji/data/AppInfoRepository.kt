@@ -28,8 +28,8 @@ import kotlinx.coroutines.flow.combine
 import timber.log.Timber
 import javax.inject.Inject
 
-class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDataSource, private val databaseDataSource: AppInfoDataSource) {
-    fun getApps(): Flow<List<AppInfo>> {
+open class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDataSource, private val databaseDataSource: AppInfoDataSource) {
+    open fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps")
 
         val apps = combine(deviceDataSource.getApps(), databaseDataSource.getApps()) { deviceApps, databaseApps ->
