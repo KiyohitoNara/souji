@@ -31,9 +31,10 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.flowOf
@@ -44,27 +45,36 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class SoujiServiceTest {
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
     @get:Rule
     val permissionRule: GrantPermissionRule = GrantPermissionRule.grant("android.permission.POST_NOTIFICATIONS")
 
-    private lateinit var service: SoujiService
+    @Mock
+    lateinit var repository: AppInfoRepository
 
-    private val repository: AppInfoRepository = mock()
+    @InjectMocks
+    private lateinit var service: SoujiService
 
     @Before
     fun setup() {
+        hiltRule.inject()
+
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         if (ContextCompat.checkSelfPermission(context, "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(context as Activity, arrayOf("android.permission.POST_NOTIFICATIONS"), 0)
         }
 
-        service = SoujiService(repository)
+        MockitoAnnotations.openMocks(this)
     }
 
     @Test

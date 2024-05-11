@@ -35,7 +35,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
-open class SoujiService @Inject constructor(private val repository: AppInfoRepository) : NotificationListenerService() {
+open class SoujiService : NotificationListenerService() {
+    @Inject
+    lateinit var repository: AppInfoRepository
+
     val enabledApps = mutableListOf<AppInfo>()
 
     private val serviceScope = CoroutineScope(Dispatchers.Main)
@@ -56,8 +59,7 @@ open class SoujiService @Inject constructor(private val repository: AppInfoRepos
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Starting SoujiService")
 
-        activeNotifications
-            .filter { notification ->
+        activeNotifications.filter { notification ->
                 enabledApps.any { it.packageName == notification.packageName }
             }.forEach { notification ->
                 Timber.d("Cancelling notification: ${notification.packageName}")
