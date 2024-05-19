@@ -22,63 +22,44 @@
 
 package io.github.kiyohitonara.souji
 
-import android.app.Activity
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import android.service.notification.StatusBarNotification
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.mock
+import org.mockito.Spy
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@HiltAndroidTest
+
+@RunWith(AndroidJUnit4::class)
 class SoujiServiceTest {
-    @get:Rule
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant("android.permission.POST_NOTIFICATIONS")
-
     @Mock
     lateinit var repository: AppInfoRepository
 
+    @Spy
     @InjectMocks
-    private lateinit var service: SoujiService
+    lateinit var service: SoujiService
 
     @Before
     fun setup() {
-        hiltRule.inject()
-
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        if (ContextCompat.checkSelfPermission(context, "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(context as Activity, arrayOf("android.permission.POST_NOTIFICATIONS"), 0)
-        }
-
         MockitoAnnotations.openMocks(this)
     }
 
     @Test
-    fun onCreate_initializesEnabledApps() = runTest {
+    fun updateEnabledApps_updatesEnabledApps() = runTest {
         val apps = listOf(
             AppInfo("com.example.app1", true),
             AppInfo("com.example.app2", false),
@@ -86,7 +67,7 @@ class SoujiServiceTest {
         )
         whenever(repository.getApps()).thenReturn(flowOf(apps))
 
-        service.onCreate()
+        service.updateEnabledApps()
 
         assertEquals(2, service.enabledApps.size)
         assertTrue(service.enabledApps.contains(AppInfo("com.example.app1", true)))
@@ -94,51 +75,31 @@ class SoujiServiceTest {
     }
 
     @Test
-    fun onStartCommand_cancelsNotificationsForEnabledApps() = runBlockingTest {
+    fun cancelActiveNotifications_cancelsActiveNotifications() = runTest {
         val apps = listOf(
-            AppInfo("io.github.kiyohitonara.souji", true)
+            AppInfo("com.example.app1", true),
+            AppInfo("com.example.app2", false),
+            AppInfo("com.example.app3", true)
         )
         whenever(repository.getApps()).thenReturn(flowOf(apps))
 
-        sendNotification()
-
-        service.onCreate()
-        service.onStartCommand(mock(), 0, 1)
-
-        val activeNotifications = service.activeNotifications
-        assertTrue(activeNotifications.none { it.packageName == "io.github.kiyohitonara.souji" })
-    }
-
-    @Test
-    fun onStartCommand_doesNotCancelNotificationsForDisabledApps() = runBlockingTest {
-        val apps = listOf(
-            AppInfo("io.github.kiyohitonara.souji", false)
+        val notifications = listOf(
+            createMockNotification("com.example.app1", "key1"),
+            createMockNotification("com.example.app2", "key2")
         )
-        whenever(repository.getApps()).thenReturn(flowOf(apps))
+        whenever(service.activeNotifications).thenReturn(notifications.toTypedArray())
 
-        sendNotification()
+        service.updateEnabledApps()
+        service.cancelActiveNotifications()
 
-        service.onCreate()
-        service.onStartCommand(mock(), 0, 1)
-
-        val activeNotifications = service.activeNotifications
-        assertTrue(activeNotifications.none { it.packageName == "io.github.kiyohitonara.souji" })
+        verify(service, times(1)).cancelActiveNotification(anyString())
     }
 
-    private fun sendNotification() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+    private fun createMockNotification(packageName: String, key: String): StatusBarNotification {
+        val notification: StatusBarNotification = mock()
+        whenever(notification.packageName).thenReturn(packageName)
+        whenever(notification.key).thenReturn(key)
 
-        val notification = Notification.Builder(context, "channel id")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("title")
-            .setContentText("text")
-            .build()
-
-        val channel = NotificationChannel("channel id", "channel name", NotificationManager.IMPORTANCE_DEFAULT)
-        channel.description = "channel description"
-
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
-        manager.notify(1, notification)
+        return notification
     }
 }

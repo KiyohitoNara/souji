@@ -24,6 +24,7 @@ package io.github.kiyohitonara.souji
 
 import android.content.Intent
 import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
@@ -44,7 +45,15 @@ open class SoujiService : NotificationListenerService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate() {
+        super.onCreate()
+
         Timber.d("Creating SoujiService")
+
+        updateEnabledApps()
+    }
+
+    fun updateEnabledApps() {
+        Timber.d("Updating enabled apps")
 
         serviceScope.launch {
             repository.getApps().collect { apps ->
@@ -59,18 +68,31 @@ open class SoujiService : NotificationListenerService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Starting SoujiService")
 
-        activeNotifications.filter { notification ->
-                enabledApps.any { it.packageName == notification.packageName }
-            }.forEach { notification ->
-                Timber.d("Cancelling notification: ${notification.packageName}")
-
-                cancelNotification(notification.key)
-            }
+        cancelActiveNotifications()
 
         return START_NOT_STICKY
     }
 
+    open fun cancelActiveNotifications() {
+        Timber.d("Cancelling active notifications")
+
+        activeNotifications
+            .filter { notification ->
+                enabledApps.any { it.packageName == notification.packageName }
+            }.forEach { notification ->
+                Timber.d("Cancelling active notification: ${notification.packageName}")
+
+                cancelActiveNotification(notification.key)
+            }
+    }
+
+    open fun cancelActiveNotification(key: String) {
+        cancelNotification(key)
+    }
+
     override fun onDestroy() {
+        super.onDestroy()
+
         Timber.d("Destroying SoujiService")
 
         serviceScope.cancel()
