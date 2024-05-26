@@ -26,8 +26,9 @@ import android.service.notification.StatusBarNotification
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -59,7 +60,7 @@ class SoujiServiceTest {
     }
 
     @Test
-    fun updateEnabledApps_updatesEnabledApps() = runTest {
+    fun updateEnabledApps_updatesEnabledApps() = runBlocking {
         val apps = listOf(
             AppInfo("com.example.app1", true),
             AppInfo("com.example.app2", false),
@@ -68,6 +69,7 @@ class SoujiServiceTest {
         whenever(repository.getApps()).thenReturn(flowOf(apps))
 
         service.updateEnabledApps()
+        delay(1000)
 
         assertEquals(2, service.enabledApps.size)
         assertTrue(service.enabledApps.contains(AppInfo("com.example.app1", true)))
@@ -75,7 +77,7 @@ class SoujiServiceTest {
     }
 
     @Test
-    fun cancelActiveNotifications_cancelsActiveNotifications() = runTest {
+    fun cancelActiveNotifications_cancelsActiveNotifications() = runBlocking {
         val apps = listOf(
             AppInfo("com.example.app1", true),
             AppInfo("com.example.app2", false),
@@ -90,6 +92,8 @@ class SoujiServiceTest {
         whenever(service.activeNotifications).thenReturn(notifications.toTypedArray())
 
         service.updateEnabledApps()
+        delay(1000)
+
         service.cancelActiveNotifications()
 
         verify(service, times(1)).cancelActiveNotification(anyString())

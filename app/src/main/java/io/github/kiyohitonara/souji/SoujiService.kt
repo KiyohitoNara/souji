@@ -24,7 +24,6 @@ package io.github.kiyohitonara.souji
 
 import android.content.Intent
 import android.service.notification.NotificationListenerService
-import android.service.notification.StatusBarNotification
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
@@ -42,7 +41,7 @@ open class SoujiService : NotificationListenerService() {
 
     val enabledApps = mutableListOf<AppInfo>()
 
-    private val serviceScope = CoroutineScope(Dispatchers.Main)
+    private val serviceScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
