@@ -22,6 +22,10 @@
 
 package io.github.kiyohitonara.souji.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasTestTag
@@ -33,17 +37,24 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class MainActivityTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -90,5 +101,36 @@ class MainActivityTest {
         composeTestRule.onNodeWithTag("ListItem-io.github.kiyohitonara.souji").assertExists()
         composeTestRule.onNodeWithTag("Switch-io.github.kiyohitonara.souji").assertExists()
         composeTestRule.onNodeWithTag("Switch-io.github.kiyohitonara.souji").performClick().assertIsOn()
+    }
+
+    @Test
+    fun appInfoListScreen_cleanButtonStartsService() {
+        val serviceStartedSignal = CountDownLatch(1)
+        val intentFilter = IntentFilter("io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED")
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == "io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED") {
+                    serviceStartedSignal.countDown()
+                }
+            }
+        }
+
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        try {
+            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+            composeTestRule.setContent {
+                AppInfoListScreen(viewModel)
+            }
+
+            composeTestRule
+                .onNodeWithTag("CleanButton")
+                .performClick()
+
+            assertTrue(serviceStartedSignal.await(10, TimeUnit.SECONDS))
+        } finally {
+            context.unregisterReceiver(receiver)
+        }
     }
 }

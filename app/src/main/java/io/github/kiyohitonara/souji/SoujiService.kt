@@ -69,6 +69,9 @@ open class SoujiService : NotificationListenerService() {
 
         cancelActiveNotifications()
 
+        val broadcastIntent = Intent("io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED")
+        sendBroadcast(broadcastIntent)
+
         return START_NOT_STICKY
     }
 
