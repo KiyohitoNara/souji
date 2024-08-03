@@ -22,8 +22,10 @@
 
 package io.github.kiyohitonara.souji.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,20 +34,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -53,13 +62,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.R
 import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.ui.theme.SoujiTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -73,10 +88,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SoujiTheme {
-                val viewModel: AppInfoViewModel = hiltViewModel()
-                lifecycle.addObserver(viewModel)
+                val appInfoViewModel: AppInfoViewModel = hiltViewModel()
+                val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
+                lifecycle.addObserver(appInfoViewModel)
+                lifecycle.addObserver(notificationListenerViewModel)
 
-                AppInfoListScreen(viewModel)
+                AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
             }
         }
     }
@@ -84,12 +101,39 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppInfoListScreen(viewModel: AppInfoViewModel) {
+fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerViewModel: NotificationListenerViewModel) {
     val context = LocalContext.current
     val intent = remember { Intent(context, SoujiService::class.java) }
 
-    val apps by viewModel.apps.collectAsState()
+    val isEnabled by notificationListenerViewModel.isEnable.collectAsState()
+    if (isEnabled.not()) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.notification_access_required)
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.notification_permission_explanation)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.settings)
+                    )
+                }
+            },
+        )
+    }
 
+    val apps by appInfoViewModel.apps.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -153,7 +197,7 @@ fun AppInfoListScreen(viewModel: AppInfoViewModel) {
                                     modifier = Modifier.testTag("Switch-${app.packageName}"),
                                     checked = app.isEnabled,
                                     onCheckedChange = { checked ->
-                                        viewModel.upsertApp(app.copy(isEnabled = checked))
+                                        appInfoViewModel.upsertApp(app.copy(isEnabled = checked))
                                     },
                                 )
                             }
@@ -169,8 +213,9 @@ fun AppInfoListScreen(viewModel: AppInfoViewModel) {
 @Composable
 fun AppInfoListScreenPreview() {
     SoujiTheme {
-        val viewModel: AppInfoViewModel = hiltViewModel()
+        val appInfoViewModel: AppInfoViewModel = hiltViewModel()
+        val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
 
-        AppInfoListScreen(viewModel)
+        AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
     }
 }
