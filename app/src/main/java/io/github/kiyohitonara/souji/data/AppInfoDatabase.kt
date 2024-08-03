@@ -27,6 +27,6 @@ import androidx.room.RoomDatabase
 import io.github.kiyohitonara.souji.model.AppInfo
 
 @Database(entities = [AppInfo::class], version = 1, exportSchema = false)
-public abstract class AppDatabase : RoomDatabase() {
+abstract class AppInfoDatabase : RoomDatabase() {
     abstract fun appInfoDao(): AppInfoDao
 }

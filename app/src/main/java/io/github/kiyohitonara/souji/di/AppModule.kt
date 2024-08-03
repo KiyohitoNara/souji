@@ -29,7 +29,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.kiyohitonara.souji.data.AppDatabase
+import io.github.kiyohitonara.souji.data.AppInfoDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDao
 import io.github.kiyohitonara.souji.data.AppInfoDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
@@ -49,13 +49,13 @@ annotation class DeviceDataSource
 object AppModule {
     @Singleton
     @Provides
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "app_info").build()
+    fun provideAppInfoDatabase(@ApplicationContext context: Context): AppInfoDatabase {
+        return Room.databaseBuilder(context, AppInfoDatabase::class.java, "app_info").build()
     }
 
     @Singleton
     @Provides
-    fun provideAppInfoDao(appDatabase: AppDatabase): AppInfoDao {
+    fun provideAppInfoDao(appDatabase: AppInfoDatabase): AppInfoDao {
         return appDatabase.appInfoDao()
     }
 

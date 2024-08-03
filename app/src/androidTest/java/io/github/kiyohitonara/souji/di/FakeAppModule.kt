@@ -29,7 +29,7 @@ import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
-import io.github.kiyohitonara.souji.data.AppDatabase
+import io.github.kiyohitonara.souji.data.AppInfoDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDao
 import io.github.kiyohitonara.souji.data.AppInfoDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
@@ -44,13 +44,13 @@ import javax.inject.Singleton
 )
 object FakeAppModule {
     @Provides
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+    fun provideAppInfoDatabase(@ApplicationContext context: Context): AppInfoDatabase {
+        return Room.inMemoryDatabaseBuilder(context, AppInfoDatabase::class.java).build()
     }
 
     @Singleton
     @Provides
-    fun provideAppInfoDao(appDatabase: AppDatabase): AppInfoDao {
+    fun provideAppInfoDao(appDatabase: AppInfoDatabase): AppInfoDao {
         return appDatabase.appInfoDao()
     }
 

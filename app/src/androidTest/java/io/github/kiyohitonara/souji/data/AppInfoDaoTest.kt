@@ -22,33 +22,27 @@
 
 package io.github.kiyohitonara.souji.data
 
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
+import org.junit.runner.RunWith
 
-@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class AppInfoDaoTest {
-    @get:Rule
-    var hiltRule = HiltAndroidRule(this)
-
-    @Inject
-    lateinit var database: AppDatabase
-
-    @Inject
-    lateinit var dao: AppInfoDao
+    private lateinit var database: AppInfoDatabase
+    private lateinit var dao: AppInfoDao
 
     @Before
     fun setup() {
-        hiltRule.inject()
+        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AppInfoDatabase::class.java).allowMainThreadQueries().build()
+        dao = database.appInfoDao()
     }
 
     @After
@@ -57,26 +51,34 @@ class AppInfoDaoTest {
     }
 
     @Test
-    fun testGetApps() = runBlocking {
+    fun getApps_returnsEmptyListWhenNoData() = runBlocking {
         val apps = dao.getApps().first()
-
-        assertTrue("apps size is ${apps.size}.", apps.isEmpty())
+        assertEquals(emptyList<AppInfo>(), apps)
     }
 
     @Test
-    fun testUpsertApp() = runBlocking {
+    fun upsertApp_insertsAndUpdatesAppInfo() = runBlocking {
         val appInfo = AppInfo("io.github.kiyohitonara.souji", false)
         dao.upsertApp(appInfo)
 
         val apps = dao.getApps().first()
-        assertEquals(1, apps.size)
-        assertEquals(appInfo, apps[0])
+        assertEquals(listOf(appInfo), apps)
 
         val updatedAppInfo = AppInfo("io.github.kiyohitonara.souji", true)
         dao.upsertApp(updatedAppInfo)
 
         val updatedApps = dao.getApps().first()
-        assertEquals(1, updatedApps.size)
-        assertEquals(updatedAppInfo, updatedApps[0])
+        assertEquals(listOf(updatedAppInfo), updatedApps)
+    }
+
+    @Test
+    fun upsertApp_handlesMultipleApps() = runBlocking {
+        val appInfo1 = AppInfo("com.google.android.apps.maps", false)
+        val appInfo2 = AppInfo("com.google.android.apps.photos", false)
+        dao.upsertApp(appInfo1)
+        dao.upsertApp(appInfo2)
+
+        val apps = dao.getApps().first()
+        assertEquals(listOf(appInfo1, appInfo2), apps)
     }
 }
