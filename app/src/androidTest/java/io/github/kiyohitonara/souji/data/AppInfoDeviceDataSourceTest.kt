@@ -23,12 +23,10 @@
 package io.github.kiyohitonara.souji.data
 
 import android.content.Context
-import android.content.pm.PackageManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.flow.last
+import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,26 +34,25 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AppInfoDeviceDataSourceTest {
     private lateinit var dataSource: AppInfoDeviceDataSource
-    private lateinit var packageManager: PackageManager
 
     @Before
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        packageManager = context.packageManager
         dataSource = AppInfoDeviceDataSource(context)
     }
 
     @Test
-    fun testGetApps() = runBlocking {
-        val apps = dataSource.getApps().last()
+    fun getApps_returnsAppInfoList() = runBlocking {
+        val result = dataSource.getApps()
 
-        assertTrue("apps size is ${apps.size}.", apps.isNotEmpty())
+        result.collect { apps ->
+            assert(apps.isNotEmpty())
+        }
     }
 
     @Test(expected = UnsupportedOperationException::class)
-    fun testUpsertApp() = runBlocking {
-        val appInfo = dataSource.getApps().last().first()
-
+    fun upsertApp_throwsUnsupportedOperationException() = runBlocking {
+        val appInfo = AppInfo("com.example.app", false)
         dataSource.upsertApp(appInfo)
     }
 }

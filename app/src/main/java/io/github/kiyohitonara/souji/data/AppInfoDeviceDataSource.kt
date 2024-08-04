@@ -24,32 +24,30 @@ package io.github.kiyohitonara.souji.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
+import javax.inject.Inject
 
-class AppInfoDeviceDataSource(private val context: Context) : AppInfoDataSource {
+class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
     override fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps from device")
 
-        val apps = mutableListOf<AppInfo>()
+        val apps = flowOf(
+            context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
+                Timber.d("Getting app: ${packageInfo.packageName}")
 
-        val manager = context.packageManager
-        val packages = manager.getInstalledPackages(PackageManager.GET_META_DATA)
-        for (packageInfo in packages) {
-            Timber.d("Getting app: ${packageInfo.packageName}")
+                AppInfo(
+                    packageInfo.packageName,
+                    packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
+                    packageInfo.applicationInfo.loadIcon(context.packageManager)
+                )
+            }
+        )
 
-            val appInfo = AppInfo(
-                packageInfo.packageName,
-                packageInfo.applicationInfo.loadLabel(manager).toString(),
-                packageInfo.applicationInfo.loadIcon(manager)
-            )
-
-            apps.add(appInfo)
-        }
-
-        return flowOf(apps)
+        return apps
     }
 
     override suspend fun upsertApp(appInfo: AppInfo) {
