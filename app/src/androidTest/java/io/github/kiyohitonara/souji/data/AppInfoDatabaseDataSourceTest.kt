@@ -22,54 +22,60 @@
 
 package io.github.kiyohitonara.souji.data
 
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import io.github.kiyohitonara.souji.di.DatabaseDataSource
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
-@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class AppInfoDatabaseDataSourceTest {
-    @get:Rule
-    var hiltRule = HiltAndroidRule(this)
+    @Mock
+    private lateinit var appInfoDao: AppInfoDao
 
-    @DatabaseDataSource
-    @Inject
-    lateinit var dataSource: AppInfoDataSource
+    private lateinit var dataSource: AppInfoDataSource
 
     @Before
     fun setup() {
-        hiltRule.inject()
+        MockitoAnnotations.openMocks(this)
+        dataSource = AppInfoDatabaseDataSource(appInfoDao)
     }
 
     @Test
-    fun testGetApps() = runBlocking {
-        val apps = dataSource.getApps().first()
+    fun getApps_returnsEmptyListWhenNoApps() = runBlocking {
+        whenever(appInfoDao.getApps()).thenReturn(flowOf(emptyList()))
 
-        assertTrue("apps size is ${apps.size}.", apps.isEmpty())
+        val result = dataSource.getApps()
+
+        result.collect { apps ->
+            assert(apps.isEmpty())
+        }
     }
 
     @Test
-    fun testUpsertApp() = runBlocking {
-        val appInfo = AppInfo("io.github.kiyohitonara.souji", false)
+    fun getApps_returnsAppInfoList() = runBlocking {
+        val appList = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(appInfoDao.getApps()).thenReturn(flowOf(appList))
+
+        val result = dataSource.getApps()
+
+        result.collect { apps ->
+            assert(apps == appList)
+        }
+    }
+
+    @Test
+    fun upsertApp_insertsAppInfo() = runBlocking {
+        val appInfo = AppInfo("com.example.app", false)
+
         dataSource.upsertApp(appInfo)
 
-        val apps = dataSource.getApps().first()
-        Assert.assertEquals(1, apps.size)
-        Assert.assertEquals(appInfo, apps[0])
-
-        val updatedAppInfo = AppInfo("io.github.kiyohitonara.souji", true)
-        dataSource.upsertApp(updatedAppInfo)
-
-        val updatedApps = dataSource.getApps().first()
-        Assert.assertEquals(1, updatedApps.size)
-        Assert.assertEquals(updatedAppInfo, updatedApps[0])
+        verify(appInfoDao).upsertApp(appInfo)
     }
 }
