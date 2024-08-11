@@ -32,27 +32,16 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
     open fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps")
 
-        val apps = combine(deviceDataSource.getApps(), databaseDataSource.getApps()) { deviceApps, databaseApps ->
-            val apps = mutableListOf<AppInfo>()
-
-            for (deviceApp in deviceApps) {
-                val databaseApp = databaseApps.find { it.packageName == deviceApp.packageName }
-
-                if (databaseApp != null) {
-                    val app = deviceApp.copy(isEnabled = databaseApp.isEnabled)
-                    apps.add(app)
-                } else {
-                    apps.add(deviceApp)
-                }
+        return combine(deviceDataSource.getApps(), databaseDataSource.getApps()) { deviceApps, databaseApps ->
+            deviceApps.map { deviceApp ->
+                databaseApps.find { it.packageName == deviceApp.packageName }
+                    ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
+                    ?: deviceApp
             }
-
-            return@combine apps
         }
-
-        return apps
     }
 
-    suspend fun upsertApp(appInfo: AppInfo) {
+    open suspend fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: $appInfo")
 
         databaseDataSource.upsertApp(appInfo)

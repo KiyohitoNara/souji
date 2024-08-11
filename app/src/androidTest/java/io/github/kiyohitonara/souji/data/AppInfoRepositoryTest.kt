@@ -22,44 +22,71 @@
 
 package io.github.kiyohitonara.souji.data
 
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
-@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class AppInfoRepositoryTest {
-    @get:Rule
-    var hiltRule = HiltAndroidRule(this)
+    @Mock
+    private lateinit var deviceDataSource: AppInfoDataSource
 
-    @Inject
-    lateinit var repository: AppInfoRepository
+    @Mock
+    private lateinit var databaseDataSource: AppInfoDataSource
+
+    private lateinit var repository: AppInfoRepository
 
     @Before
     fun setup() {
-        hiltRule.inject()
+        MockitoAnnotations.openMocks(this)
+        repository = AppInfoRepository(deviceDataSource, databaseDataSource)
     }
 
     @Test
-    fun testGetApps() = runBlocking {
-        val apps = repository.getApps().first()
+    fun getApps_returnsAppInfoList() = runBlocking {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.getApps()).thenReturn(flowOf(deviceApps))
 
-        assertTrue("apps size is ${apps.size}.", apps.isNotEmpty())
+        val databaseApps = listOf(AppInfo("com.example.app1", true))
+        whenever(databaseDataSource.getApps()).thenReturn(flowOf(databaseApps))
+
+        val result = repository.getApps().toList().flatten()
+
+        assertEquals(2, result.size)
+        assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
     }
 
     @Test
-    fun testUpsertApp() = runBlocking {
-        val appInfo = AppInfo("io.github.kiyohitonara.souji", true)
+    fun getApps_returnsAppInfoListWhenNoDatabaseApps() = runBlocking {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.getApps()).thenReturn(flowOf(deviceApps))
+
+        whenever(databaseDataSource.getApps()).thenReturn(flowOf(emptyList()))
+
+        val result = repository.getApps().toList().flatten()
+
+        assertEquals(2, result.size)
+        assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+    }
+
+    @Test
+    fun upsertApp_insertsAppInfo() = runBlocking {
+        val appInfo = AppInfo("com.example.app1", true)
+
         repository.upsertApp(appInfo)
 
-        val apps = repository.getApps().first().filter { it.isEnabled }
-        Assert.assertEquals(1, apps.size)
+        verify(databaseDataSource).upsertApp(appInfo)
     }
 }
