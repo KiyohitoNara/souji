@@ -26,59 +26,62 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
 import org.mockito.Mockito.mock
-import javax.inject.Inject
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
-@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class AppInfoViewModelTest {
-    @get:Rule
-    var hiltRule = HiltAndroidRule(this)
-
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
-    @Inject
-    lateinit var repository: AppInfoRepository
+    @Mock
+    private lateinit var repository: AppInfoRepository
 
     private lateinit var viewModel: AppInfoViewModel
 
     @Before
     fun setup() {
-        hiltRule.inject()
-
+        MockitoAnnotations.openMocks(this)
         viewModel = AppInfoViewModel(repository)
     }
 
     @Test
-    fun testOnResume() = runBlocking {
+    fun onCreate_shouldLoadInitialApps() = runBlocking {
+        val apps = listOf(AppInfo("com.example.app", false))
+        whenever(repository.getApps()).thenReturn(flowOf(apps))
+
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
         registry.addObserver(viewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
-        assertTrue("apps size is ${viewModel.apps.first().size}.", viewModel.apps.first().isNotEmpty())
+        delay(1000)
+        assertEquals(viewModel.apps.value, apps)
     }
 
     @Test
-    fun testUpsertApp() = runBlocking {
-        val appInfo = AppInfo("io.github.kiyohitonara.souji", true)
-        viewModel.upsertApp(appInfo)
+    fun upsertApp_shouldCallRepositoryUpsertApp() = runBlocking {
+        val apps = listOf(AppInfo("com.example.app", false))
+        whenever(repository.getApps()).thenReturn(flowOf(apps))
+
+        val app = AppInfo("com.example.app", true)
+        viewModel.upsertApp(app)
 
         delay(1000)
-
-        val apps = viewModel.apps.value.filter { it.isEnabled }
-        Assert.assertEquals(1, apps.size)
+        verify(repository).upsertApp(app)
     }
 }

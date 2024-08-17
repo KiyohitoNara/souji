@@ -25,34 +25,40 @@ package io.github.kiyohitonara.souji.ui
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
-    protected val _apps: StateFlow<List<AppInfo>> = repository.getApps().stateIn(GlobalScope, SharingStarted.Eagerly, emptyList())
-    val apps: StateFlow<List<AppInfo>> = _apps
+open class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
+    private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
+    val apps = _apps.asStateFlow()
 
-    override fun onResume(owner: LifecycleOwner) {
-        super.onResume(owner)
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
 
-        Timber.d("Lifecycle is resumed")
+        Timber.d("onCreate")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getApps().collect { appsList ->
+                Timber.d("Apps: ${appsList.size}")
+
+                _apps.value = appsList
+            }
+        }
     }
 
-    fun upsertApp(appInfo: AppInfo) {
+    open fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: $appInfo")
 
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.upsertApp(appInfo)
         }
     }
