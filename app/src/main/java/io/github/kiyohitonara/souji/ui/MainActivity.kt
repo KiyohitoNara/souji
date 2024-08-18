@@ -22,7 +22,6 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -41,20 +40,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -62,19 +55,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.R
 import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.ui.theme.SoujiTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -82,15 +70,18 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var repository: AppInfoRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.w("Before accessing repository: ${::repository.isInitialized}")
+
+        Timber.d("Lifecycle is created")
 
         setContent {
             SoujiTheme {
                 val appInfoViewModel: AppInfoViewModel = hiltViewModel()
-                val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
                 lifecycle.addObserver(appInfoViewModel)
+
+                val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
                 lifecycle.addObserver(notificationListenerViewModel)
 
                 AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
@@ -105,35 +96,38 @@ fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerVi
     val context = LocalContext.current
     val intent = remember { Intent(context, SoujiService::class.java) }
 
-    val isEnabled by notificationListenerViewModel.isEnable.collectAsState()
+    val isEnabled by notificationListenerViewModel.isEnable.collectAsStateWithLifecycle()
     if (isEnabled.not()) {
         AlertDialog(
+            modifier = Modifier.testTag("NotificationAccessDialog"),
             onDismissRequest = { },
             title = {
                 Text(
-                    text = stringResource(id = R.string.notification_access_required)
+                    text = stringResource(id = R.string.notification_access_required),
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.notification_permission_explanation)
+                    text = stringResource(id = R.string.notification_access_required_explanation),
                 )
             },
             confirmButton = {
                 TextButton(
+                    modifier = Modifier.testTag("NotificationAccessDialogConfirmButton"),
                     onClick = {
-                        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                    }
+                        val settingsIntent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        context.startActivity(settingsIntent)
+                    },
                 ) {
                     Text(
-                        text = stringResource(id = R.string.settings)
+                        text = stringResource(id = R.string.setting),
                     )
                 }
             },
         )
     }
 
-    val apps by appInfoViewModel.apps.collectAsState()
+    val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -155,7 +149,7 @@ fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerVi
                 modifier = Modifier.testTag("CleanButton"),
                 onClick = {
                     context.startService(intent)
-                }
+                },
             ) {
                 Icon(
                     imageVector = Icons.Default.CleaningServices,
@@ -200,10 +194,10 @@ fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerVi
                                         appInfoViewModel.upsertApp(app.copy(isEnabled = checked))
                                     },
                                 )
-                            }
+                            },
                         )
                     }
-                }
+                },
             )
         }
     )

@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import javax.inject.Inject
 
-class AppInfoDatabaseDataSource @Inject constructor(private val appInfoDao: AppInfoDao) : AppInfoDataSource {
+open class AppInfoDatabaseDataSource @Inject constructor(private val appInfoDao: AppInfoDao) : AppInfoDataSource {
     override fun getApps(): Flow<List<AppInfo>> {
         Timber.d("Getting apps from database")
 
