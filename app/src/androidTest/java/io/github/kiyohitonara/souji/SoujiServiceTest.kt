@@ -22,88 +22,69 @@
 
 package io.github.kiyohitonara.souji
 
-import android.service.notification.StatusBarNotification
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.ServiceTestRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.Mockito.mock
-import org.mockito.MockitoAnnotations
-import org.mockito.Spy
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SoujiServiceTest {
-    @Mock
-    lateinit var repository: AppInfoRepository
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
 
-    @Spy
-    @InjectMocks
-    lateinit var service: SoujiService
+    @get:Rule
+    val serviceRule = ServiceTestRule()
+
+    @Inject
+    lateinit var repository: AppInfoRepository
 
     @Before
     fun setup() {
-        MockitoAnnotations.openMocks(this)
+        hiltRule.inject()
     }
 
     @Test
-    fun updateEnabledApps_updatesEnabledApps() = runBlocking {
-        val apps = listOf(
-            AppInfo("com.example.app1", true),
-            AppInfo("com.example.app2", false),
-            AppInfo("com.example.app3", true)
-        )
-        whenever(repository.getApps()).thenReturn(flowOf(apps))
+    fun onStartCommand_callsCancelActiveNotification() = runBlocking {
+        val countDownLatch = CountDownLatch(1)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED && intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji") {
+                    countDownLatch.countDown()
+                }
+            }
+        }
 
-        service.updateEnabledApps()
-        delay(1000)
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
+        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
-        assertEquals(2, service.enabledApps.size)
-        assertTrue(service.enabledApps.contains(AppInfo("com.example.app1", true)))
-        assertTrue(service.enabledApps.contains(AppInfo("com.example.app3", true)))
-    }
+        try {
+            repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
 
-    @Test
-    fun cancelActiveNotifications_cancelsActiveNotifications() = runBlocking {
-        val apps = listOf(
-            AppInfo("com.example.app1", true),
-            AppInfo("com.example.app2", false),
-            AppInfo("com.example.app3", true)
-        )
-        whenever(repository.getApps()).thenReturn(flowOf(apps))
+            val intent = Intent(ApplicationProvider.getApplicationContext(), SoujiService::class.java)
+            intent.putExtra(SoujiService.EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, arrayOf("io.github.kiyohitonara.souji"))
 
-        val notifications = listOf(
-            createMockNotification("com.example.app1", "key1"),
-            createMockNotification("com.example.app2", "key2")
-        )
-        whenever(service.activeNotifications).thenReturn(notifications.toTypedArray())
-
-        service.updateEnabledApps()
-        delay(1000)
-
-        service.cancelActiveNotifications()
-
-        verify(service, times(1)).cancelActiveNotification(anyString())
-    }
-
-    private fun createMockNotification(packageName: String, key: String): StatusBarNotification {
-        val notification: StatusBarNotification = mock()
-        whenever(notification.packageName).thenReturn(packageName)
-        whenever(notification.key).thenReturn(key)
-
-        return notification
+            serviceRule.startService(intent)
+            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+        } finally {
+            context.unregisterReceiver(receiver)
+        }
     }
 }

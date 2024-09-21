@@ -44,6 +44,7 @@ import androidx.test.espresso.intent.rule.IntentsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
@@ -216,17 +217,25 @@ class MainActivityTest {
         val countDownLatch = CountDownLatch(1)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == "io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED") {
+                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED && intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji") {
                     countDownLatch.countDown()
                 }
             }
         }
 
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val intentFilter = IntentFilter("io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED")
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
+            val apps = listOf(AppInfo("io.github.kiyohitonara.souji", true))
+            whenever(appInfoRepository.getApps()).thenReturn(flowOf(apps))
+
+            val owner = mock(LifecycleOwner::class.java)
+            val registry = LifecycleRegistry(owner)
+            registry.addObserver(appInfoViewModel)
+            registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+
             composeRule.setContent {
                 AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
             }

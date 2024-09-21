@@ -24,79 +24,38 @@ package io.github.kiyohitonara.souji
 
 import android.content.Intent
 import android.service.notification.NotificationListenerService
-import dagger.hilt.android.AndroidEntryPoint
-import io.github.kiyohitonara.souji.data.AppInfoRepository
-import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
-@AndroidEntryPoint
 open class SoujiService : NotificationListenerService() {
-    @Inject
-    lateinit var repository: AppInfoRepository
-
-    val enabledApps = mutableListOf<AppInfo>()
-
-    private val serviceScope = CoroutineScope(Dispatchers.IO)
-
-    override fun onCreate() {
-        super.onCreate()
-
-        Timber.d("Creating SoujiService")
-
-        updateEnabledApps()
-    }
-
-    fun updateEnabledApps() {
-        Timber.d("Updating enabled apps")
-
-        serviceScope.launch {
-            repository.getApps().collect { apps ->
-                Timber.d("Got ${apps.size} apps")
-
-                enabledApps.clear()
-                enabledApps.addAll(apps.filter { it.isEnabled })
-            }
-        }
+    companion object {
+        const val ACTION_NOTIFICATION_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED"
+        const val EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES = "io.github.kiyohitonara.souji.CANCELLABLE_NOTIFICATION_PACKAGE_NAMES"
+        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Starting SoujiService")
 
-        cancelActiveNotifications()
+        val packageNames = intent?.getStringArrayExtra(EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES)
+        packageNames?.forEach { packageName ->
+            cancelActiveNotification(packageName)
+        }
 
-        val broadcastIntent = Intent("io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED")
-        sendBroadcast(broadcastIntent)
+        stopSelf()
 
         return START_NOT_STICKY
     }
 
-    open fun cancelActiveNotifications() {
-        Timber.d("Cancelling active notifications")
+    open fun cancelActiveNotification(packageName: String) {
+        Timber.d("Cancelling active notification: $packageName")
 
-        activeNotifications
-            .filter { notification ->
-                enabledApps.any { it.packageName == notification.packageName }
-            }.forEach { notification ->
-                Timber.d("Cancelling active notification: ${notification.packageName}")
+        val cancellableNotifications = activeNotifications.filter { it.packageName == packageName }
+        cancellableNotifications.forEach { notification ->
+            cancelNotification(notification.key)
+        }
 
-                cancelActiveNotification(notification.key)
-            }
-    }
-
-    open fun cancelActiveNotification(key: String) {
-        cancelNotification(key)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        Timber.d("Destroying SoujiService")
-
-        serviceScope.cancel()
+        val intent = Intent(ACTION_NOTIFICATION_CANCELLED)
+        intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME, packageName)
+        sendBroadcast(intent)
     }
 }

@@ -47,7 +47,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -61,10 +60,8 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.R
 import io.github.kiyohitonara.souji.SoujiService
-import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.ui.theme.SoujiTheme
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -91,7 +88,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerViewModel: NotificationListenerViewModel) {
     val context = LocalContext.current
-    val intent = remember { Intent(context, SoujiService::class.java) }
 
     val isEnabled by notificationListenerViewModel.isEnable.collectAsStateWithLifecycle()
     if (isEnabled.not()) {
@@ -145,6 +141,10 @@ fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerVi
             FloatingActionButton(
                 modifier = Modifier.testTag("CleanButton"),
                 onClick = {
+                    val packageNames = apps.filter { it.isEnabled }.map { it.packageName }.toTypedArray()
+                    val intent = Intent(context, SoujiService::class.java).apply {
+                        putExtra(SoujiService.EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, packageNames)
+                    }
                     context.startService(intent)
                 },
             ) {
