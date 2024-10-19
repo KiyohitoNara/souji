@@ -22,10 +22,11 @@
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.kotlinKapt)
-    alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -62,9 +63,6 @@ android {
         buildConfig = true
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -74,46 +72,56 @@ android {
 }
 
 dependencies {
-    implementation(libs.hilt)
-    kapt(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.core.ktx)
-    implementation(libs.lifecycle.runtime.ktx)
-    implementation(libs.lifecycle.runtime.compose)
-    implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.lifecycle.viewmodel.savedstate)
-    kapt(libs.lifecycle.compiler)
-    implementation(libs.activity.compose)
-    implementation(platform(libs.compose.bom))
-    implementation(libs.ui)
-    implementation(libs.ui.graphics)
-    implementation(libs.ui.tooling.preview)
-    implementation(libs.material3)
-    implementation(libs.material.icons.extended)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+
     implementation(libs.accompanist.drawablepainter)
-    implementation(libs.room.runtime)
-    annotationProcessor(libs.room.compiler)
-    kapt(libs.room.compiler)
-    implementation(libs.room.ktx)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    ksp(libs.androidx.lifecycle.compiler)
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    annotationProcessor(libs.androidx.room.compiler)
+
     implementation(libs.timber)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     testImplementation(libs.junit)
+
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.android.compiler)
+
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.arch.core.testing)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.espresso.intents)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
+    androidTestImplementation(libs.androidx.arch.core.testing)
+
+    androidTestImplementation(libs.androidx.room.testing)
+    
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(libs.espresso.intents)
-    androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.ui.test.junit4)
-    androidTestImplementation(libs.hilt.testing)
-    androidTestImplementation(libs.room.testing)
-    kaptAndroidTest(libs.hilt.compiler)
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
-}
-
-kapt {
-    correctErrorTypes = true
 }
