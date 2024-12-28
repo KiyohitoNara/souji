@@ -53,14 +53,14 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoList() = runBlocking {
+    fun getAppsFlow_returnsAppInfoList() = runBlocking {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getApps()).thenReturn(flowOf(deviceApps))
+        whenever(deviceDataSource.getAppsFlow()).thenReturn(flowOf(deviceApps))
 
         val databaseApps = listOf(AppInfo("com.example.app1", true))
-        whenever(databaseDataSource.getApps()).thenReturn(flowOf(databaseApps))
+        whenever(databaseDataSource.getAppsFlow()).thenReturn(flowOf(databaseApps))
 
-        val result = repository.getApps().toList().flatten()
+        val result = repository.getAppsFlow().toList().flatten()
 
         assertEquals(2, result.size)
         assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
@@ -68,13 +68,13 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoListWhenNoDatabaseApps() = runBlocking {
+    fun getAppsFlow_returnsAppInfoListWhenNoDatabaseApps() = runBlocking {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getApps()).thenReturn(flowOf(deviceApps))
+        whenever(deviceDataSource.getAppsFlow()).thenReturn(flowOf(deviceApps))
 
-        whenever(databaseDataSource.getApps()).thenReturn(flowOf(emptyList()))
+        whenever(databaseDataSource.getAppsFlow()).thenReturn(flowOf(emptyList()))
 
-        val result = repository.getApps().toList().flatten()
+        val result = repository.getAppsFlow().toList().flatten()
 
         assertEquals(2, result.size)
         assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)

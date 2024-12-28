@@ -47,7 +47,7 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
         Timber.d("onCreate")
 
         viewModelScope.launch(Dispatchers.IO) {
-            repository.getApps().collect { appsList ->
+            repository.getAppsFlow().collect { appsList ->
                 Timber.d("Apps: ${appsList.size}")
 
                 _apps.value = appsList

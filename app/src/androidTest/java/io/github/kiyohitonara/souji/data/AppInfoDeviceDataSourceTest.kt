@@ -42,8 +42,15 @@ class AppInfoDeviceDataSourceTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoList() = runBlocking {
+    fun getApps_returnsAppInfoList() {
         val result = dataSource.getApps()
+
+        assert(result.isNotEmpty())
+    }
+
+    @Test
+    fun getAppsFlow_returnsAppInfoList() = runBlocking {
+        val result = dataSource.getAppsFlow()
 
         result.collect { apps ->
             assert(apps.isNotEmpty())
@@ -54,5 +61,12 @@ class AppInfoDeviceDataSourceTest {
     fun upsertApp_throwsUnsupportedOperationException() = runBlocking {
         val appInfo = AppInfo("com.example.app", false)
         dataSource.upsertApp(appInfo)
+    }
+
+    @Test(expected = UnsupportedOperationException::class)
+    fun upsertApps_throwsUnsupportedOperationException() = runBlocking {
+        val appInfos = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+
+        dataSource.upsertApps(appInfos)
     }
 }

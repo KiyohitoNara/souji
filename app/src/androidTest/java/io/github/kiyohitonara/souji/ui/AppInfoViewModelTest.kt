@@ -62,7 +62,7 @@ class AppInfoViewModelTest {
     @Test
     fun onCreate_shouldLoadInitialApps() = runBlocking {
         val apps = listOf(AppInfo("com.example.app", false))
-        whenever(repository.getApps()).thenReturn(flowOf(apps))
+        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
 
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
@@ -76,7 +76,7 @@ class AppInfoViewModelTest {
     @Test
     fun upsertApp_shouldCallRepositoryUpsertApp() = runBlocking {
         val apps = listOf(AppInfo("com.example.app", false))
-        whenever(repository.getApps()).thenReturn(flowOf(apps))
+        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
 
         val app = AppInfo("com.example.app", true)
         viewModel.upsertApp(app)

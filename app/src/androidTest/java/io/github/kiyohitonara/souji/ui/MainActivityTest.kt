@@ -160,7 +160,7 @@ class MainActivityTest {
     @Test
     fun appInfoListScreen_showsAppList_whenAppsAreAvailable() {
         val apps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(appInfoRepository.getApps()).thenReturn(flowOf(apps))
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
 
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
@@ -178,7 +178,7 @@ class MainActivityTest {
 
     @Test
     fun appInfoListScreen_showsEmptyAppList_whenNoAppsAreAvailable() {
-        whenever(appInfoRepository.getApps()).thenReturn(flowOf(emptyList()))
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(emptyList()))
 
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
@@ -197,7 +197,7 @@ class MainActivityTest {
     @Test
     fun appInfoListScreen_togglesAppSwitch_whenSwitchIsClicked() = runBlocking {
         val apps = listOf(AppInfo("com.example.app", false))
-        whenever(appInfoDeviceDataSource.getApps()).thenReturn(flowOf(apps))
+        whenever(appInfoDeviceDataSource.getAppsFlow()).thenReturn(flowOf(apps))
 
         val owner = mock(LifecycleOwner::class.java)
         val registry = LifecycleRegistry(owner)
@@ -229,7 +229,7 @@ class MainActivityTest {
 
         try {
             val apps = listOf(AppInfo("io.github.kiyohitonara.souji", true))
-            whenever(appInfoRepository.getApps()).thenReturn(flowOf(apps))
+            whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
 
             val owner = mock(LifecycleOwner::class.java)
             val registry = LifecycleRegistry(owner)

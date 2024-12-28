@@ -29,10 +29,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDataSource, private val databaseDataSource: AppInfoDataSource) {
-    open fun getApps(): Flow<List<AppInfo>> {
+    open fun getAppsFlow(): Flow<List<AppInfo>> {
         Timber.d("Getting apps")
 
-        return combine(deviceDataSource.getApps(), databaseDataSource.getApps()) { deviceApps, databaseApps ->
+        return combine(deviceDataSource.getAppsFlow(), databaseDataSource.getAppsFlow()) { deviceApps, databaseApps ->
             deviceApps.map { deviceApp ->
                 databaseApps.find { it.packageName == deviceApp.packageName }
                     ?.let { deviceApp.copy(isEnabled = it.isEnabled) }

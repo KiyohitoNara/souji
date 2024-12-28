@@ -32,25 +32,31 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
-    override fun getApps(): Flow<List<AppInfo>> {
-        Timber.d("Getting apps from device")
+    override fun getApps(): List<AppInfo> {
+        val apps = context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
+            Timber.d("Getting app: ${packageInfo.packageName}")
 
-        val apps = flowOf(
-            context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
-                Timber.d("Getting app: ${packageInfo.packageName}")
-
-                AppInfo(
-                    packageInfo.packageName,
-                    packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
-                    packageInfo.applicationInfo.loadIcon(context.packageManager)
-                )
-            }
-        )
+            AppInfo(
+                packageInfo.packageName,
+                packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
+                packageInfo.applicationInfo.loadIcon(context.packageManager)
+            )
+        }
 
         return apps
     }
 
+    override fun getAppsFlow(): Flow<List<AppInfo>> {
+        Timber.d("Getting apps from device")
+
+        return flowOf(getApps())
+    }
+
     override suspend fun upsertApp(appInfo: AppInfo) {
+        throw UnsupportedOperationException("Device data source does not support upserting apps")
+    }
+
+    override suspend fun upsertApps(appInfos: List<AppInfo>) {
         throw UnsupportedOperationException("Device data source does not support upserting apps")
     }
 }

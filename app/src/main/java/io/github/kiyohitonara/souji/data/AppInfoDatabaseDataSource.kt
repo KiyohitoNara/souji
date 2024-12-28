@@ -28,7 +28,11 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoDatabaseDataSource @Inject constructor(private val appInfoDao: AppInfoDao) : AppInfoDataSource {
-    override fun getApps(): Flow<List<AppInfo>> {
+    override fun getApps(): List<AppInfo> {
+        throw UnsupportedOperationException("Database data source does not support getting apps")
+    }
+
+    override fun getAppsFlow(): Flow<List<AppInfo>> {
         Timber.d("Getting apps from database")
 
         return appInfoDao.getApps()
@@ -38,5 +42,9 @@ open class AppInfoDatabaseDataSource @Inject constructor(private val appInfoDao:
         Timber.d("Upserting app: ${appInfo.packageName}")
 
         appInfoDao.upsertApp(appInfo)
+    }
+
+    override suspend fun upsertApps(appInfos: List<AppInfo>) {
+        throw UnsupportedOperationException("Database data source does not support upserting apps")
     }
 }

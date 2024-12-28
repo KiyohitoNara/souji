@@ -47,11 +47,16 @@ class AppInfoDatabaseDataSourceTest {
         dataSource = AppInfoDatabaseDataSource(appInfoDao)
     }
 
+    @Test(expected = UnsupportedOperationException::class)
+    fun getApps_throwsUnsupportedOperationException() {
+        dataSource.getApps()
+    }
+
     @Test
-    fun getApps_returnsEmptyListWhenNoApps() = runBlocking {
+    fun getAppsFlow_returnsEmptyListWhenNoApps() = runBlocking {
         whenever(appInfoDao.getApps()).thenReturn(flowOf(emptyList()))
 
-        val result = dataSource.getApps()
+        val result = dataSource.getAppsFlow()
 
         result.collect { apps ->
             assert(apps.isEmpty())
@@ -59,11 +64,11 @@ class AppInfoDatabaseDataSourceTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoList() = runBlocking {
+    fun getAppsFlow_returnsAppInfoList() = runBlocking {
         val appList = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
         whenever(appInfoDao.getApps()).thenReturn(flowOf(appList))
 
-        val result = dataSource.getApps()
+        val result = dataSource.getAppsFlow()
 
         result.collect { apps ->
             assert(apps == appList)
@@ -77,5 +82,12 @@ class AppInfoDatabaseDataSourceTest {
         dataSource.upsertApp(appInfo)
 
         verify(appInfoDao).upsertApp(appInfo)
+    }
+
+    @Test(expected = UnsupportedOperationException::class)
+    fun upsertApps_throwsUnsupportedOperationException() = runBlocking {
+        val appInfos = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+
+        dataSource.upsertApps(appInfos)
     }
 }
