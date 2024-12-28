@@ -95,6 +95,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.androidx.lifecycle.compiler)
 
+    implementation(libs.androidx.preference)
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
