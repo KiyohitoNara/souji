@@ -39,17 +39,49 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class AppInfoRepositoryTest {
     @Mock
-    private lateinit var deviceDataSource: AppInfoDataSource
+    private lateinit var deviceDataSource: AppInfoDeviceDataSource
 
     @Mock
-    private lateinit var databaseDataSource: AppInfoDataSource
+    private lateinit var sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
+
+    @Mock
+    private lateinit var databaseDataSource: AppInfoDatabaseDataSource
 
     private lateinit var repository: AppInfoRepository
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        repository = AppInfoRepository(deviceDataSource, databaseDataSource)
+        repository = AppInfoRepository(deviceDataSource, sharedPreferencesDataSource, databaseDataSource)
+    }
+
+    @Test
+    fun getApps_returnsAppInfoList() {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.getApps()).thenReturn(deviceApps)
+
+        val sharedPreferencesApps = listOf(AppInfo("com.example.app1", true))
+        whenever(sharedPreferencesDataSource.getApps()).thenReturn(sharedPreferencesApps)
+
+        val result = repository.getApps()
+
+        assertEquals(2, result.size)
+        assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+    }
+
+    @Test
+    fun getApps_returnsAppInfoListWhenNoSharedPreferencesApps() {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.getApps()).thenReturn(deviceApps)
+
+        whenever(sharedPreferencesDataSource.getApps()).thenReturn(emptyList())
+
+        val result = repository.getApps()
+
+        assertEquals(2, result.size)
+        assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
     }
 
     @Test
@@ -88,5 +120,14 @@ class AppInfoRepositoryTest {
         repository.upsertApp(appInfo)
 
         verify(databaseDataSource).upsertApp(appInfo)
+    }
+
+    @Test
+    fun upsertApps_insertsAppInfoList() = runBlocking {
+        val appInfos = listOf(AppInfo("com.example.app1", true), AppInfo("com.example.app2", true))
+
+        repository.upsertApps(appInfos)
+
+        verify(sharedPreferencesDataSource).upsertApps(appInfos)
     }
 }

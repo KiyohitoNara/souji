@@ -67,10 +67,4 @@ object FakeAppModule {
     fun provideDeviceDataSource(@ApplicationContext context: Context): AppInfoDataSource {
         return AppInfoDeviceDataSource(context)
     }
-
-    @Singleton
-    @Provides
-    fun provideRepository(@DeviceDataSource deviceDataSource: AppInfoDataSource, @DatabaseDataSource databaseDataSource: AppInfoDataSource): AppInfoRepository {
-        return AppInfoRepository(deviceDataSource, databaseDataSource)
-    }
 }

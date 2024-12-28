@@ -49,6 +49,7 @@ import io.github.kiyohitonara.souji.data.AppInfoDatabase
 import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
 import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
 import io.github.kiyohitonara.souji.data.AppInfoRepository
+import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.flowOf
@@ -87,6 +88,9 @@ class MainActivityTest {
     @Mock
     private lateinit var appInfoDeviceDataSource: AppInfoDeviceDataSource
 
+    @Mock
+    private lateinit var appInfoSharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
+
     private lateinit var appInfoRepository: AppInfoRepository
     private lateinit var appInfoViewModel: AppInfoViewModel
 
@@ -104,7 +108,7 @@ class MainActivityTest {
         val appInfoDatabase = Room.inMemoryDatabaseBuilder(context, AppInfoDatabase::class.java).build()
         val appInfoDao = appInfoDatabase.appInfoDao()
         val appInfoDatabaseDataSource = AppInfoDatabaseDataSource(appInfoDao)
-        appInfoRepository = spy(AppInfoRepository(appInfoDeviceDataSource, appInfoDatabaseDataSource))
+        appInfoRepository = spy(AppInfoRepository(appInfoDeviceDataSource, appInfoSharedPreferencesDataSource, appInfoDatabaseDataSource))
         appInfoViewModel = AppInfoViewModel(appInfoRepository)
     }
 
