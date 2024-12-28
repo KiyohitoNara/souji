@@ -29,39 +29,21 @@ import android.content.IntentFilter
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ServiceTestRule
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import io.github.kiyohitonara.souji.data.AppInfoRepository
-import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
-@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SoujiServiceTest {
     @get:Rule
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule
     val serviceRule = ServiceTestRule()
 
-    @Inject
-    lateinit var repository: AppInfoRepository
-
-    @Before
-    fun setup() {
-        hiltRule.inject()
-    }
-
     @Test
-    fun onStartCommand_callsCancelActiveNotification() = runBlocking {
+    fun onStartCommand_shouldCancelActiveNotifications() = runBlocking {
         val countDownLatch = CountDownLatch(1)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -76,8 +58,6 @@ class SoujiServiceTest {
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
-            repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
-
             val intent = Intent(ApplicationProvider.getApplicationContext(), SoujiService::class.java)
             intent.putExtra(SoujiService.EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, arrayOf("io.github.kiyohitonara.souji"))
 

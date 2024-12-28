@@ -22,6 +22,7 @@
 
 package io.github.kiyohitonara.souji
 
+import android.content.Context
 import android.content.Intent
 import android.service.notification.NotificationListenerService
 import timber.log.Timber
@@ -29,16 +30,25 @@ import timber.log.Timber
 open class SoujiService : NotificationListenerService() {
     companion object {
         const val ACTION_NOTIFICATION_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED"
+        const val ACTION_NOTIFICATIONS_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATIONS_CANCELLED"
         const val EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES = "io.github.kiyohitonara.souji.CANCELLABLE_NOTIFICATION_PACKAGE_NAMES"
+        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAMES"
         const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
+
+        fun startService(context: Context, packageNames: List<String>) {
+            val intent = Intent(context, SoujiService::class.java)
+            intent.putExtra(EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, packageNames.toTypedArray())
+
+            context.startService(intent)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Starting SoujiService")
 
         val packageNames = intent?.getStringArrayExtra(EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES)
-        packageNames?.forEach { packageName ->
-            cancelActiveNotification(packageName)
+        if (packageNames != null && packageNames.isNotEmpty()) {
+            cancelActiveNotifications(packageNames.toList())
         }
 
         stopSelf()
@@ -46,7 +56,19 @@ open class SoujiService : NotificationListenerService() {
         return START_NOT_STICKY
     }
 
-    open fun cancelActiveNotification(packageName: String) {
+    private fun cancelActiveNotifications(packageNames: List<String>) {
+        Timber.d("Cancelling active notifications")
+
+        packageNames.forEach { packageName ->
+            cancelActiveNotification(packageName)
+        }
+
+        val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
+        intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES, packageNames.toTypedArray())
+        sendBroadcast(intent)
+    }
+
+    private fun cancelActiveNotification(packageName: String) {
         Timber.d("Cancelling active notification: $packageName")
 
         val cancellableNotifications = activeNotifications.filter { it.packageName == packageName }
