@@ -84,4 +84,21 @@ class AppInfoViewModelTest {
         delay(1000)
         verify(repository).upsertApp(app)
     }
+
+    @Test
+    fun onDestroy_shouldCallRepositoryUpsertApps() = runBlocking {
+        val apps = listOf(AppInfo("com.example.app", false))
+        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
+
+        val owner = mock(LifecycleOwner::class.java)
+        val registry = LifecycleRegistry(owner)
+        registry.addObserver(viewModel)
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        delay(1000)
+
+        registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        delay(1000)
+
+        verify(repository).upsertApps(apps)
+    }
 }
