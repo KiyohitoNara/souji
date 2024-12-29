@@ -63,10 +63,10 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
         }
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
-        super.onDestroy(owner)
+    override fun onStop(owner: LifecycleOwner) {
+        super.onStop(owner)
 
-        Timber.d("onDestroy")
+        Timber.d("onStop")
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.upsertApps(_apps.value)
