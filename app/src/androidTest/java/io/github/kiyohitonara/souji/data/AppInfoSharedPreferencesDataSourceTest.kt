@@ -41,6 +41,13 @@ class AppInfoSharedPreferencesDataSourceTest {
     @Before
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPreferences.edit().apply {
+            clear()
+            apply()
+        }
+
         dataSource = AppInfoSharedPreferencesDataSource(context)
     }
 
