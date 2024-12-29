@@ -1,4 +1,4 @@
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2024 Kiyohito Nara
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,12 +20,19 @@
   ~ SOFTWARE.
   -->
 
-<resources>
-    <string name="app_name">Souji</string>
-    <string name="clean">Clean</string>
-    <string name="disabled_shortcut">Shortcut is disabled</string>
-    <string name="notification_access_required">Notification access required</string>
-    <string name="notification_access_required_explanation">"Notification access" permission is required for this application to work.</string>
-    <string name="setting">Setting</string>
-    <string name="unknown_app">Unknown app</string>
-</resources>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="clean"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/clean"
+        android:shortcutLongLabel="@string/clean"
+        android:shortcutDisabledMessage="@string/disabled_shortcut">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.kiyohitonara.souji"
+            android:targetClass="io.github.kiyohitonara.souji.SoujiActivity" />
+        <categories android:name="android.shortcut.conversation" />
+        <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
+    </shortcut>
+</shortcuts>
