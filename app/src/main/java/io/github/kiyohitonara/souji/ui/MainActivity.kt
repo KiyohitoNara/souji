@@ -142,10 +142,7 @@ fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerVi
                 modifier = Modifier.testTag("CleanButton"),
                 onClick = {
                     val packageNames = apps.filter { it.isEnabled }.map { it.packageName }.toTypedArray()
-                    val intent = Intent(context, SoujiService::class.java).apply {
-                        putExtra(SoujiService.EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, packageNames)
-                    }
-                    context.startService(intent)
+                    SoujiService.startService(context, packageNames.toList())
                 },
             ) {
                 Icon(
