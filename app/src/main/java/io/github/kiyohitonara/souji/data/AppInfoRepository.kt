@@ -52,13 +52,13 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
     }
 
     open suspend fun upsertApp(appInfo: AppInfo) {
-        Timber.d("Upserting app: $appInfo")
+        Timber.d("Upserting app: ${appInfo.packageName}")
 
         databaseDataSource.upsertApp(appInfo)
     }
 
     open suspend fun upsertApps(appInfos: List<AppInfo>) {
-        Timber.d("Upserting apps: $appInfos")
+        Timber.d("Upserting ${appInfos.size} apps")
 
         sharedPreferencesDataSource.upsertApps(appInfos)
     }

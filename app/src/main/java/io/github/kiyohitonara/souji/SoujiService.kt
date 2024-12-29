@@ -44,7 +44,7 @@ open class SoujiService : NotificationListenerService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.d("Starting SoujiService")
+        Timber.d("Service is started")
 
         val packageNames = intent?.getStringArrayExtra(EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES)
         if (packageNames != null && packageNames.isNotEmpty()) {

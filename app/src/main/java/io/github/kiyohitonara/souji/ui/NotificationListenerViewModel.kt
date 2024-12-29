@@ -40,7 +40,7 @@ class NotificationListenerViewModel @Inject constructor(private val repository: 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
 
-        Timber.d("Lifecycle is resumed")
+        Timber.d("ViewModel is resumed")
 
         checkNotificationListener()
     }

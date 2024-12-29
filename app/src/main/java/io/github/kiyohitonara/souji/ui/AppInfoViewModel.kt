@@ -44,11 +44,11 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
 
-        Timber.d("onCreate")
+        Timber.d("ViewModel is created")
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.getAppsFlow().collect { appsList ->
-                Timber.d("Apps: ${appsList.size}")
+                Timber.d("Getting ${appsList.size} apps")
 
                 _apps.value = appsList
             }
@@ -56,7 +56,7 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
     }
 
     open fun upsertApp(appInfo: AppInfo) {
-        Timber.d("Upserting app: $appInfo")
+        Timber.d("Upserting app: ${appInfo.packageName}")
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.upsertApp(appInfo)
@@ -66,7 +66,7 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
 
-        Timber.d("onStop")
+        Timber.d("ViewModel is stopped")
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.upsertApps(_apps.value)

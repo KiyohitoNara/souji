@@ -37,7 +37,7 @@ class SoujiActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Timber.d("Lifecycle is created")
+        Timber.d("Activity is created")
 
         val packageNames = appInfoRepository.getApps().filter { it.isEnabled }.map { it.packageName }
         SoujiService.startService(applicationContext, packageNames)

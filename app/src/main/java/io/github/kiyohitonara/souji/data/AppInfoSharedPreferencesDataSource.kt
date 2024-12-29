@@ -62,7 +62,7 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
     }
 
     override suspend fun upsertApps(appInfos: List<AppInfo>) {
-        Timber.d("Upserting apps to shared preferences")
+        Timber.d("Upserting ${appInfos.size} apps")
 
         val packageNames = appInfos.filter { it.isEnabled }.map { appInfo -> appInfo.packageName }.toSet()
 
