@@ -27,6 +27,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -76,6 +78,39 @@ class MainActivityTest {
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
+    }
+
+    @Test
+    fun soujiApp_clickAboutMenuItem_navigatesToAboutScreen() {
+        composeTestRule.setContent {
+            SoujiApp(
+                notificationListenerViewModel = notificationListenerViewModel,
+                appInfoViewModel = appInfoViewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("SoujiAppBarMenuButton").performClick()
+        composeTestRule.onNodeWithTag("SoujiAppBarAboutMenuItem").performClick()
+
+        composeTestRule.onNodeWithTag("SoujiAppBarTitle").assertTextEquals("About")
+        composeTestRule.onNodeWithTag("SoujiFloatingActionButton").assertDoesNotExist()
+    }
+
+    @Test
+    fun soujiApp_clickBackButton_navigatesBackToAppsScreen() {
+        composeTestRule.setContent {
+            SoujiApp(
+                notificationListenerViewModel = notificationListenerViewModel,
+                appInfoViewModel = appInfoViewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("SoujiAppBarMenuButton").performClick()
+        composeTestRule.onNodeWithTag("SoujiAppBarAboutMenuItem").performClick()
+        composeTestRule.onNodeWithTag("SoujiAppBarNavigationButton").performClick()
+
+        composeTestRule.onNodeWithTag("SoujiAppBarTitle").assertTextEquals("Souji")
+        composeTestRule.onNodeWithTag("SoujiFloatingActionButton").assertExists()
     }
 
     @Test

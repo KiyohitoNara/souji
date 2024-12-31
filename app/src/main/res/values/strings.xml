@@ -21,6 +21,7 @@
   -->
 
 <resources>
+    <string name="about">About</string>
     <string name="app_name">Souji</string>
     <string name="back">Back</string>
     <string name="clean">Clean</string>

@@ -20,14 +20,20 @@
  * SOFTWARE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.hilt.android) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.plugin.compose) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.aboutlibraries.plugin) apply false
+package io.github.kiyohitonara.souji.ui
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+
+@Composable
+fun AboutScreen(contentPadding: PaddingValues = PaddingValues(0.dp)) {
+    LibrariesContainer(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+        showLicenseBadges = false,
+    )
 }
-true // Needed to make the Suppress annotation work for the plugins block

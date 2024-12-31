@@ -27,6 +27,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.aboutlibraries.plugin)
 }
 
 android {
@@ -105,6 +106,9 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
 
     implementation(libs.timber)
+
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
