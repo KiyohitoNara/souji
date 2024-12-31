@@ -26,35 +26,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.provider.Settings
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
-import androidx.test.espresso.intent.rule.IntentsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.SoujiService
-import io.github.kiyohitonara.souji.data.AppInfoDatabase
-import io.github.kiyohitonara.souji.data.AppInfoDatabaseDataSource
-import io.github.kiyohitonara.souji.data.AppInfoDeviceDataSource
 import io.github.kiyohitonara.souji.data.AppInfoRepository
-import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -64,35 +49,17 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
     @get:Rule
-    val hiltRule = HiltAndroidRule(this)
+    val executorTestRule = InstantTaskExecutorRule()
 
     @get:Rule
-    val executorRule = InstantTaskExecutorRule()
-
-    @get:Rule
-    val composeRule = createComposeRule()
-
-    @get:Rule
-    val intentsRule = IntentsRule()
-
-    @Mock
-    private lateinit var appInfoDeviceDataSource: AppInfoDeviceDataSource
-
-    @Mock
-    private lateinit var appInfoSharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
-
-    private lateinit var appInfoRepository: AppInfoRepository
-    private lateinit var appInfoViewModel: AppInfoViewModel
+    val composeTestRule = createComposeRule()
 
     @Mock
     private lateinit var notificationListenerRepository: NotificationListenerRepository
@@ -100,70 +67,22 @@ class MainActivityTest {
     @InjectMocks
     private lateinit var notificationListenerViewModel: NotificationListenerViewModel
 
+    @Mock
+    private lateinit var appInfoRepository: AppInfoRepository
+
+    @InjectMocks
+    private lateinit var appInfoViewModel: AppInfoViewModel
+
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val appInfoDatabase = Room.inMemoryDatabaseBuilder(context, AppInfoDatabase::class.java).build()
-        val appInfoDao = appInfoDatabase.appInfoDao()
-        val appInfoDatabaseDataSource = AppInfoDatabaseDataSource(appInfoDao)
-        appInfoRepository = spy(AppInfoRepository(appInfoDeviceDataSource, appInfoSharedPreferencesDataSource, appInfoDatabaseDataSource))
-        appInfoViewModel = AppInfoViewModel(appInfoRepository)
     }
 
     @Test
-    fun appInfoListScreen_doesNotShowDialog_whenNotificationAccessIsEnabled() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(true)
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("NotificationAccessDialog").assertDoesNotExist()
-    }
-
-    @Test
-    fun appInfoListScreen_showsDialog_whenNotificationAccessIsDisabled() {
+    fun soujiApp_clickFloatingActionButton_startsSoujiService() {
         whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
 
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("NotificationAccessDialog").assertExists()
-    }
-
-    @Test
-    fun appInfoListScreen_startsSettingsActivity_whenDialogConfirmButtonIsClicked() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("NotificationAccessDialogConfirmButton").performClick()
-        Intents.intended(hasAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-    }
-
-    @Test
-    fun appInfoListScreen_showsAppList_whenAppsAreAvailable() {
-        val apps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        val apps = listOf(AppInfo("io.github.kiyohitonara.souji", true))
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
 
         val owner = mock(LifecycleOwner::class.java)
@@ -171,53 +90,6 @@ class MainActivityTest {
         registry.addObserver(appInfoViewModel)
         registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("AppInfoList").onChildren().apply {
-            assertEquals(2, this.fetchSemanticsNodes().size)
-        }
-    }
-
-    @Test
-    fun appInfoListScreen_showsEmptyAppList_whenNoAppsAreAvailable() {
-        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(emptyList()))
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(appInfoViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("AppInfoList").onChildren().apply {
-            assertEquals(0, this.fetchSemanticsNodes().size)
-        }
-    }
-
-    @Test
-    fun appInfoListScreen_togglesAppSwitch_whenSwitchIsClicked() = runBlocking {
-        val apps = listOf(AppInfo("com.example.app", false))
-        whenever(appInfoDeviceDataSource.getAppsFlow()).thenReturn(flowOf(apps))
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(appInfoViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-        composeRule.setContent {
-            AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
-        }
-
-        composeRule.onNodeWithTag("Switch-com.example.app").performClick().assertIsOn()
-        verify(appInfoRepository).upsertApp(AppInfo("com.example.app", true))
-    }
-
-    @Test
-    fun appInfoListScreen_startsService_whenCleanButtonIsClicked() {
         val countDownLatch = CountDownLatch(1)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -232,19 +104,14 @@ class MainActivityTest {
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
-            val apps = listOf(AppInfo("io.github.kiyohitonara.souji", true))
-            whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-
-            val owner = mock(LifecycleOwner::class.java)
-            val registry = LifecycleRegistry(owner)
-            registry.addObserver(appInfoViewModel)
-            registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-            composeRule.setContent {
-                AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
+            composeTestRule.setContent {
+                SoujiApp(
+                    notificationListenerViewModel = notificationListenerViewModel,
+                    appInfoViewModel = appInfoViewModel
+                )
             }
 
-            composeRule.onNodeWithTag("CleanButton").performClick()
+            composeTestRule.onNodeWithTag("SoujiFloatingActionButton").performClick()
             assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
         } finally {
             context.unregisterReceiver(receiver)

@@ -22,8 +22,10 @@
 
 <resources>
     <string name="app_name">Souji</string>
+    <string name="back">Back</string>
     <string name="clean">Clean</string>
     <string name="disabled_shortcut">Shortcut is disabled</string>
+    <string name="more">More</string>
     <string name="notification_access_required">Notification access required</string>
     <string name="notification_access_required_explanation">"Notification access" permission is required for this application to work.</string>
     <string name="setting">Setting</string>

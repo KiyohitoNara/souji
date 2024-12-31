@@ -22,27 +22,20 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CleaningServices
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -52,11 +45,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.R
 import io.github.kiyohitonara.souji.SoujiService
@@ -78,7 +73,58 @@ class MainActivity : ComponentActivity() {
                 val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
                 lifecycle.addObserver(notificationListenerViewModel)
 
-                AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
+                SoujiApp(
+                    notificationListenerViewModel = notificationListenerViewModel,
+                    appInfoViewModel = appInfoViewModel,
+                )
+            }
+        }
+    }
+}
+
+enum class SoujiScreen(@StringRes val title: Int) {
+    Apps(title = R.string.app_name),
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SoujiApp(
+    notificationListenerViewModel: NotificationListenerViewModel,
+    appInfoViewModel: AppInfoViewModel,
+    navController: NavHostController = rememberNavController(),
+) {
+    val context = LocalContext.current
+
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = SoujiScreen.valueOf(backStackEntry?.destination?.route ?: SoujiScreen.Apps.name)
+
+    val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
+
+    NotificationAccessDialog(notificationListenerViewModel)
+
+    Scaffold(
+        topBar = {
+            SoujiAppBar(
+                currentScreen = currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() },
+            )
+        },
+        floatingActionButton = {
+            if (currentScreen == SoujiScreen.Apps) {
+                SoujiFloatingActionButton {
+                    val packageNames = apps.filter { it.isEnabled }.map { it.packageName }
+                    SoujiService.startService(context, packageNames)
+                }
+            }
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = SoujiScreen.Apps.name,
+        ) {
+            composable(SoujiScreen.Apps.name) {
+                AppsScreen(appInfoViewModel, padding)
             }
         }
     }
@@ -86,124 +132,50 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppInfoListScreen(appInfoViewModel: AppInfoViewModel, notificationListenerViewModel: NotificationListenerViewModel) {
-    val context = LocalContext.current
-
-    val isEnabled by notificationListenerViewModel.isEnable.collectAsStateWithLifecycle()
-    if (isEnabled.not()) {
-        AlertDialog(
-            modifier = Modifier.testTag("NotificationAccessDialog"),
-            onDismissRequest = { },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.notification_access_required),
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(id = R.string.notification_access_required_explanation),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    modifier = Modifier.testTag("NotificationAccessDialogConfirmButton"),
-                    onClick = {
-                        val settingsIntent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                        context.startActivity(settingsIntent)
-                    },
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.setting),
-                    )
-                }
-            },
-        )
-    }
-
-    val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                    )
-                }
+fun SoujiAppBar(
+    currentScreen: SoujiScreen,
+    canNavigateBack: Boolean,
+    navigateUp: () -> Unit,
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = stringResource(currentScreen.title),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier.testTag("CleanButton"),
-                onClick = {
-                    val packageNames = apps.filter { it.isEnabled }.map { it.packageName }.toTypedArray()
-                    SoujiService.startService(context, packageNames.toList())
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CleaningServices,
-                    contentDescription = stringResource(id = R.string.clean),
-                )
+        modifier = Modifier.testTag("SoujiAppBar"),
+        navigationIcon = {
+            if (canNavigateBack) {
+                IconButton(
+                    onClick = { navigateUp() },
+                    modifier = Modifier.testTag("SoujiAppBarNavigationButton"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                    )
+                }
             }
         },
-        content = { padding ->
-            LazyColumn(
-                modifier = Modifier.testTag("AppInfoList"),
-                contentPadding = padding,
-                content = {
-                    items(apps) { app ->
-                        ListItem(
-                            modifier = Modifier.testTag("ListItem-${app.packageName}"),
-                            headlineContent = {
-                                Text(
-                                    text = app.label ?: stringResource(id = R.string.unknown_app),
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                )
-                            },
-                            supportingContent = {
-                                Text(
-                                    text = app.packageName,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                )
-                            },
-                            leadingContent = {
-                                Image(
-                                    modifier = Modifier.size(40.dp),
-                                    painter = rememberDrawablePainter(drawable = app.icon),
-                                    contentDescription = app.label,
-                                )
-                            },
-                            trailingContent = {
-                                Switch(
-                                    modifier = Modifier.testTag("Switch-${app.packageName}"),
-                                    checked = app.isEnabled,
-                                    onCheckedChange = { checked ->
-                                        appInfoViewModel.upsertApp(app.copy(isEnabled = checked))
-                                    },
-                                )
-                            },
-                        )
-                    }
-                },
-            )
-        }
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
     )
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppInfoListScreenPreview() {
-    SoujiTheme {
-        val appInfoViewModel: AppInfoViewModel = hiltViewModel()
-        val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
-
-        AppInfoListScreen(appInfoViewModel, notificationListenerViewModel)
+fun SoujiFloatingActionButton(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.testTag("SoujiFloatingActionButton"),
+    ) {
+        Icon(
+            imageVector = Icons.Default.CleaningServices,
+            contentDescription = stringResource(R.string.clean),
+        )
     }
 }
