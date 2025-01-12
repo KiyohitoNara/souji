@@ -78,6 +78,15 @@ android {
             excludes += "/META-INF/**/*"
         }
     }
+    applicationVariants.all {
+        val variant = this
+        variant.outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                val outputFileName = "Souji_${variant.versionName}.apk"
+                output.outputFileName = outputFileName
+            }
+    }
 }
 
 dependencies {
@@ -137,7 +146,7 @@ dependencies {
     androidTestImplementation(libs.androidx.arch.core.testing)
 
     androidTestImplementation(libs.androidx.room.testing)
-    
+
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.android)
 }
