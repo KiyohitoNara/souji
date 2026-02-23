@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Kiyohito Nara
+ * Copyright (c) 2026 Kiyohito Nara
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,9 +74,29 @@ class AppInfoSharedPreferencesDataSourceTest {
         assertTrue(apps.any { it.packageName == "com.example.app2" })
     }
 
-    @Test(expected = UnsupportedOperationException::class)
-    fun getAppsFlow_throwsUnsupportedOperationException() {
-        dataSource.getAppsFlow()
+    @Test
+    fun getAppsFlow_returnsEmptyListWhenNoAppsStored() = runBlocking {
+        val result = dataSource.getAppsFlow()
+        result.collect { apps ->
+            assert(apps.isEmpty())
+        }
+    }
+
+    @Test
+    fun getAppsFlow_returnsListOfAppsWhenAppsStored() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPreferences.edit().apply {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
+            apply()
+        }
+
+        val result = dataSource.getAppsFlow()
+        result.collect { apps ->
+            assertTrue(apps.isNotEmpty())
+            assertTrue(apps.any { it.packageName == "com.example.app1" })
+            assertTrue(apps.any { it.packageName == "com.example.app2" })
+        }
     }
 
     @Test(expected = UnsupportedOperationException::class)

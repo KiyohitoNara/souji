@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Kiyohito Nara
+ * Copyright (c) 2026 Kiyohito Nara
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 
 open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
@@ -54,7 +55,9 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
     }
 
     override fun getAppsFlow(): Flow<List<AppInfo>> {
-        throw UnsupportedOperationException("Shared preferences data source does not support getting apps")
+        Timber.d("Getting apps from shared preferences")
+
+        return flowOf(getApps())
     }
 
     override suspend fun upsertApp(appInfo: AppInfo) {
