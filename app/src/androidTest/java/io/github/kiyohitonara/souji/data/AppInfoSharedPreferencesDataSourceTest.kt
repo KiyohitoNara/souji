@@ -27,12 +27,14 @@ import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import timber.log.Timber
 
 @RunWith(AndroidJUnit4::class)
 class AppInfoSharedPreferencesDataSourceTest {
@@ -49,6 +51,31 @@ class AppInfoSharedPreferencesDataSourceTest {
         }
 
         dataSource = AppInfoSharedPreferencesDataSource(context)
+    }
+
+    @Test
+    fun apps_emitsEmptyListWhenNoAppsStored() = runBlocking {
+        val apps = dataSource.apps
+        apps.take(1).collect { apps ->
+            assert(apps.isEmpty())
+        }
+    }
+
+    @Test
+    fun apps_emitsListOfAppWhenAppsStored() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPreferences.edit().apply {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
+            apply()
+        }
+
+        val apps = dataSource.apps
+        apps.take(1).collect { apps ->
+            assertTrue(apps.isNotEmpty())
+            assertTrue(apps.any { it.packageName == "com.example.app1" })
+            assertTrue(apps.any { it.packageName == "com.example.app2" })
+        }
     }
 
     @Test
