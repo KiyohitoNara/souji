@@ -22,16 +22,65 @@
 
 package io.github.kiyohitonara.souji.data
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
+    val apps = callbackFlow {
+        // Send the initial value
+        val result = trySend(currentApps())
+        if (result.isFailure) {
+            Timber.e("Failed to send initial value")
+        }
+
+        // Listen for changes
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val result = trySend(currentApps())
+                if (result.isFailure) {
+                    Timber.e("Failed to send value")
+                }
+            }
+        }
+
+        // Register the receiver
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        context.registerReceiver(receiver, filter)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    fun currentApps(): List<AppInfo> {
+        Timber.d("Getting apps from device")
+
+        return context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
+            Timber.d("Getting app: ${packageInfo.packageName}")
+
+            AppInfo(
+                packageInfo.packageName,
+                packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
+                packageInfo.applicationInfo.loadIcon(context.packageManager)
+            )
+        }
+    }
+
     override fun getApps(): List<AppInfo> {
         val apps = context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
             Timber.d("Getting app: ${packageInfo.packageName}")
