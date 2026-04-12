@@ -44,24 +44,21 @@ class AppInfoRepositoryTest {
     @Mock
     private lateinit var sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
 
-    @Mock
-    private lateinit var databaseDataSource: AppInfoDatabaseDataSource
-
     private lateinit var repository: AppInfoRepository
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        repository = AppInfoRepository(deviceDataSource, sharedPreferencesDataSource, databaseDataSource)
+        repository = AppInfoRepository(deviceDataSource, sharedPreferencesDataSource)
     }
 
     @Test
     fun getApps_returnsAppInfoList() {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getApps()).thenReturn(deviceApps)
+        whenever(deviceDataSource.currentApps()).thenReturn(deviceApps)
 
-        val sharedPreferencesApps = listOf(AppInfo("com.example.app1", true))
-        whenever(sharedPreferencesDataSource.getApps()).thenReturn(sharedPreferencesApps)
+        val prefsApps = listOf(AppInfo("com.example.app1", true))
+        whenever(sharedPreferencesDataSource.currentApps()).thenReturn(prefsApps)
 
         val result = repository.getApps()
 
@@ -73,9 +70,9 @@ class AppInfoRepositoryTest {
     @Test
     fun getApps_returnsAppInfoListWhenNoSharedPreferencesApps() {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getApps()).thenReturn(deviceApps)
+        whenever(deviceDataSource.currentApps()).thenReturn(deviceApps)
 
-        whenever(sharedPreferencesDataSource.getApps()).thenReturn(emptyList())
+        whenever(sharedPreferencesDataSource.currentApps()).thenReturn(emptyList())
 
         val result = repository.getApps()
 
@@ -87,10 +84,10 @@ class AppInfoRepositoryTest {
     @Test
     fun getAppsFlow_returnsAppInfoList() = runBlocking {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getAppsFlow()).thenReturn(flowOf(deviceApps))
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
 
-        val databaseApps = listOf(AppInfo("com.example.app1", true))
-        whenever(databaseDataSource.getAppsFlow()).thenReturn(flowOf(databaseApps))
+        val prefsApps = listOf(AppInfo("com.example.app1", true))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(prefsApps))
 
         val result = repository.getAppsFlow().toList().flatten()
 
@@ -100,11 +97,11 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getAppsFlow_returnsAppInfoListWhenNoDatabaseApps() = runBlocking {
+    fun getAppsFlow_returnsAppInfoListWhenNoSharedPreferencesApps() = runBlocking {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.getAppsFlow()).thenReturn(flowOf(deviceApps))
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
 
-        whenever(databaseDataSource.getAppsFlow()).thenReturn(flowOf(emptyList()))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
         val result = repository.getAppsFlow().toList().flatten()
 
@@ -114,12 +111,12 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun upsertApp_insertsAppInfo() = runBlocking {
+    fun upsertApp_delegatesToSharedPreferences() = runBlocking {
         val appInfo = AppInfo("com.example.app1", true)
 
         repository.upsertApp(appInfo)
 
-        verify(databaseDataSource).upsertApp(appInfo)
+        verify(sharedPreferencesDataSource).upsertApp(appInfo)
     }
 
     @Test

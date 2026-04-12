@@ -26,11 +26,7 @@ import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.Flow
 
 interface AppInfoDataSource {
-    fun getApps(): List<AppInfo>
+    val apps: Flow<List<AppInfo>>
 
-    fun getAppsFlow(): Flow<List<AppInfo>>
-
-    suspend fun upsertApp(appInfo: AppInfo)
-
-    suspend fun upsertApps(appInfos: List<AppInfo>)
+    fun currentApps(): List<AppInfo>
 }

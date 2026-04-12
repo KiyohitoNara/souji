@@ -25,8 +25,12 @@ package io.github.kiyohitonara.souji.data
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,31 +46,60 @@ class AppInfoDeviceDataSourceTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoList() {
-        val result = dataSource.getApps()
+    fun currentApps_returnsNonEmptyList() {
+        val apps = dataSource.currentApps()
 
-        assert(result.isNotEmpty())
+        assertTrue(apps.isNotEmpty())
     }
 
     @Test
-    fun getAppsFlow_returnsAppInfoList() = runBlocking {
-        val result = dataSource.getAppsFlow()
+    fun currentApps_returnsAppsWithNonBlankPackageName() {
+        val apps = dataSource.currentApps()
 
-        result.collect { apps ->
-            assert(apps.isNotEmpty())
-        }
+        assertTrue(apps.all { it.packageName.isNotBlank() })
     }
 
-    @Test(expected = UnsupportedOperationException::class)
-    fun upsertApp_throwsUnsupportedOperationException() = runBlocking {
-        val appInfo = AppInfo("com.example.app", false)
-        dataSource.upsertApp(appInfo)
+    @Test
+    fun currentApps_returnsAppsWithLabel() {
+        val apps = dataSource.currentApps()
+
+        assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
     }
 
-    @Test(expected = UnsupportedOperationException::class)
-    fun upsertApps_throwsUnsupportedOperationException() = runBlocking {
-        val appInfos = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+    @Test
+    fun currentApps_returnsAppsWithIsEnabledFalse() {
+        val apps = dataSource.currentApps()
 
-        dataSource.upsertApps(appInfos)
+        assertTrue(apps.all { !it.isEnabled })
+    }
+
+    @Test
+    fun apps_emitsInitialListMatchingCurrentApps() = runBlocking {
+        val fromCurrentApps = dataSource.currentApps().map { it.packageName }.sorted()
+        val fromFlow = dataSource.apps.first().map { it.packageName }.sorted()
+
+        assertEquals(fromCurrentApps, fromFlow)
+    }
+
+    @Test
+    fun apps_emitsAppsWithIsEnabledFalse() = runBlocking {
+        val apps = dataSource.apps.first()
+
+        assertFalse(apps.any { it.isEnabled })
+    }
+
+    @Test
+    fun apps_emitsAppsWithLabel() = runBlocking {
+        val apps = dataSource.apps.first()
+
+        assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
+    }
+
+    @Test
+    fun apps_includesTestApp() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val apps = dataSource.apps.first()
+
+        assertNotNull(apps.find { it.packageName == context.packageName })
     }
 }

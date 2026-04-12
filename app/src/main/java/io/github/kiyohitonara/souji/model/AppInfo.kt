@@ -23,21 +23,11 @@
 package io.github.kiyohitonara.souji.model
 
 import android.graphics.drawable.Drawable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
 
-@Entity(tableName = "app_info")
 data class AppInfo(
-    @PrimaryKey
-    @ColumnInfo(name = "package_name")
     val packageName: String,
-    @Ignore
     val label: String?,
-    @Ignore
     val icon: Drawable?,
-    @ColumnInfo(name = "is_enabled")
     val isEnabled: Boolean = false,
 ) {
     constructor(packageName: String, isEnabled: Boolean) : this(packageName, null, null, isEnabled)

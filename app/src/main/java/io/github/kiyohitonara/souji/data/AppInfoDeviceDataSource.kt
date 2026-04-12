@@ -32,12 +32,11 @@ import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
-    val apps = callbackFlow {
+    override val apps: Flow<List<AppInfo>> = callbackFlow {
         // Send the initial value
         val result = trySend(currentApps())
         if (result.isFailure) {
@@ -67,7 +66,7 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
         }
     }
 
-    fun currentApps(): List<AppInfo> {
+    override fun currentApps(): List<AppInfo> {
         Timber.d("Getting apps from device")
 
         return context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
@@ -79,33 +78,5 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
                 packageInfo.applicationInfo.loadIcon(context.packageManager)
             )
         }
-    }
-
-    override fun getApps(): List<AppInfo> {
-        val apps = context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
-            Timber.d("Getting app: ${packageInfo.packageName}")
-
-            AppInfo(
-                packageInfo.packageName,
-                packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
-                packageInfo.applicationInfo.loadIcon(context.packageManager)
-            )
-        }
-
-        return apps
-    }
-
-    override fun getAppsFlow(): Flow<List<AppInfo>> {
-        Timber.d("Getting apps from device")
-
-        return flowOf(getApps())
-    }
-
-    override suspend fun upsertApp(appInfo: AppInfo) {
-        throw UnsupportedOperationException("Device data source does not support upserting apps")
-    }
-
-    override suspend fun upsertApps(appInfos: List<AppInfo>) {
-        throw UnsupportedOperationException("Device data source does not support upserting apps")
     }
 }

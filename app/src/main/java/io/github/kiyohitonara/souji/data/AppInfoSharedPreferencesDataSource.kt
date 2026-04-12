@@ -31,7 +31,6 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 
 open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
@@ -41,7 +40,7 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    val apps = callbackFlow {
+    override val apps: Flow<List<AppInfo>> = callbackFlow {
         // Send the initial value
         val result = trySend(currentApps())
         if (result.isFailure) {
@@ -65,57 +64,28 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
         }
     }
 
-    fun currentApps(): List<AppInfo> {
+    override fun currentApps(): List<AppInfo> {
         Timber.d("Getting apps from shared preferences")
-        val packageNames = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
 
+        val packageNames = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
         return packageNames.map { packageName ->
             Timber.d("Getting app: $packageName")
-
-            AppInfo(
-                packageName,
-                true,
-            )
+            AppInfo(packageName, true)
         }
     }
 
-    override fun getApps(): List<AppInfo> {
-        Timber.d("Getting apps from shared preferences")
+    open suspend fun upsertApp(appInfo: AppInfo) {
+        Timber.d("Upserting app: ${appInfo.packageName}")
 
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-        val packageNames = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
-        val apps = packageNames.map { packageName ->
-            Timber.d("Getting app: $packageName")
-
-            AppInfo(
-                packageName,
-                true,
-            )
-        }
-
-        return apps
+        val current = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet())?.toMutableSet() ?: mutableSetOf()
+        if (appInfo.isEnabled) current.add(appInfo.packageName) else current.remove(appInfo.packageName)
+        sharedPreferences.edit().putStringSet(KEY_APP_PACKAGE_NAMES, current).apply()
     }
 
-    override fun getAppsFlow(): Flow<List<AppInfo>> {
-        Timber.d("Getting apps from shared preferences")
-
-        return flowOf(getApps())
-    }
-
-    override suspend fun upsertApp(appInfo: AppInfo) {
-        throw UnsupportedOperationException("Shared preferences data source does not support upserting apps")
-    }
-
-    override suspend fun upsertApps(appInfos: List<AppInfo>) {
+    open suspend fun upsertApps(appInfos: List<AppInfo>) {
         Timber.d("Upserting ${appInfos.size} apps")
 
-        val packageNames = appInfos.filter { it.isEnabled }.map { appInfo -> appInfo.packageName }.toSet()
-
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        sharedPreferences.edit().apply {
-            putStringSet(KEY_APP_PACKAGE_NAMES, packageNames)
-            apply()
-        }
+        val packageNames = appInfos.filter { it.isEnabled }.map { it.packageName }.toSet()
+        sharedPreferences.edit().putStringSet(KEY_APP_PACKAGE_NAMES, packageNames).apply()
     }
 }

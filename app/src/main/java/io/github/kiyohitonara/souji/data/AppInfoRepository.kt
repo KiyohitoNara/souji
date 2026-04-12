@@ -28,12 +28,12 @@ import kotlinx.coroutines.flow.combine
 import timber.log.Timber
 import javax.inject.Inject
 
-open class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDeviceDataSource, private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource, private val databaseDataSource: AppInfoDatabaseDataSource) {
+open class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDeviceDataSource, private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource) {
     open fun getApps(): List<AppInfo> {
         Timber.d("Getting apps")
 
-        return deviceDataSource.getApps().map { deviceApp ->
-            sharedPreferencesDataSource.getApps().find { it.packageName == deviceApp.packageName }
+        return deviceDataSource.currentApps().map { deviceApp ->
+            sharedPreferencesDataSource.currentApps().find { it.packageName == deviceApp.packageName }
                 ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
                 ?: deviceApp
         }
@@ -42,9 +42,9 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
     open fun getAppsFlow(): Flow<List<AppInfo>> {
         Timber.d("Getting apps")
 
-        return combine(deviceDataSource.getAppsFlow(), databaseDataSource.getAppsFlow()) { deviceApps, databaseApps ->
+        return combine(deviceDataSource.apps, sharedPreferencesDataSource.apps) { deviceApps, prefsApps ->
             deviceApps.map { deviceApp ->
-                databaseApps.find { it.packageName == deviceApp.packageName }
+                prefsApps.find { it.packageName == deviceApp.packageName }
                     ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
                     ?: deviceApp
             }
@@ -54,7 +54,7 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
     open suspend fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: ${appInfo.packageName}")
 
-        databaseDataSource.upsertApp(appInfo)
+        sharedPreferencesDataSource.upsertApp(appInfo)
     }
 
     open suspend fun upsertApps(appInfos: List<AppInfo>) {
