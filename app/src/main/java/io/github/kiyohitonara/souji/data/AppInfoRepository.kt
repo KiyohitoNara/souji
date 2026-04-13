@@ -29,25 +29,25 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoRepository @Inject constructor(private val deviceDataSource: AppInfoDeviceDataSource, private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource) {
-    open fun getApps(): List<AppInfo> {
-        Timber.d("Getting apps")
-
-        return deviceDataSource.currentApps().map { deviceApp ->
-            sharedPreferencesDataSource.currentApps().find { it.packageName == deviceApp.packageName }
+    private fun mergeApps(deviceApps: List<AppInfo>, prefsApps: List<AppInfo>): List<AppInfo> {
+        return deviceApps.map { deviceApp ->
+            prefsApps.find { it.packageName == deviceApp.packageName }
                 ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
                 ?: deviceApp
         }
     }
 
+    open fun getEnabledPackageNames(): List<String> {
+        Timber.d("Getting enabled package names")
+
+        return sharedPreferencesDataSource.currentApps().map { it.packageName }
+    }
+
     open fun getAppsFlow(): Flow<List<AppInfo>> {
-        Timber.d("Getting apps")
+        Timber.d("Getting apps flow")
 
         return combine(deviceDataSource.apps, sharedPreferencesDataSource.apps) { deviceApps, prefsApps ->
-            deviceApps.map { deviceApp ->
-                prefsApps.find { it.packageName == deviceApp.packageName }
-                    ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
-                    ?: deviceApp
-            }
+            mergeApps(deviceApps, prefsApps)
         }
     }
 
@@ -55,11 +55,5 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
         Timber.d("Upserting app: ${appInfo.packageName}")
 
         sharedPreferencesDataSource.upsertApp(appInfo)
-    }
-
-    open suspend fun upsertApps(appInfos: List<AppInfo>) {
-        Timber.d("Upserting ${appInfos.size} apps")
-
-        sharedPreferencesDataSource.upsertApps(appInfos)
     }
 }

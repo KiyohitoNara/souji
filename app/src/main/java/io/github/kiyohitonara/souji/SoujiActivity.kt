@@ -39,7 +39,7 @@ class SoujiActivity : ComponentActivity() {
 
         Timber.d("Activity is created")
 
-        val packageNames = appInfoRepository.getApps().filter { it.isEnabled }.map { it.packageName }
+        val packageNames = appInfoRepository.getEnabledPackageNames()
         SoujiService.startService(applicationContext, packageNames)
 
         finishAndRemoveTask()

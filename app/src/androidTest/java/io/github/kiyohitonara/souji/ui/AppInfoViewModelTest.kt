@@ -42,7 +42,6 @@ import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import timber.log.Timber
 
 @RunWith(AndroidJUnit4::class)
 class AppInfoViewModelTest {
@@ -86,25 +85,4 @@ class AppInfoViewModelTest {
         verify(repository).upsertApp(app)
     }
 
-    @Test
-    fun onStop_shouldCallRepositoryUpsertApps() = runBlocking {
-        Timber.plant(Timber.DebugTree())
-        val apps = listOf(AppInfo("com.example.app", false))
-        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(viewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        delay(1000)
-
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-        delay(1000)
-
-        verify(repository).upsertApps(apps)
-    }
 }

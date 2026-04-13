@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+
 @HiltViewModel
 open class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
     private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
@@ -63,13 +64,4 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
         }
     }
 
-    override fun onStop(owner: LifecycleOwner) {
-        super.onStop(owner)
-
-        Timber.d("ViewModel is stopped")
-
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.upsertApps(_apps.value)
-        }
-    }
 }

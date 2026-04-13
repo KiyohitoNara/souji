@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,32 +54,24 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getApps_returnsAppInfoList() {
-        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.currentApps()).thenReturn(deviceApps)
-
-        val prefsApps = listOf(AppInfo("com.example.app1", true))
+    fun getEnabledPackageNames_returnsPackageNames() {
+        val prefsApps = listOf(AppInfo("com.example.app1", true), AppInfo("com.example.app2", true))
         whenever(sharedPreferencesDataSource.currentApps()).thenReturn(prefsApps)
 
-        val result = repository.getApps()
+        val result = repository.getEnabledPackageNames()
 
         assertEquals(2, result.size)
-        assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
-        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+        assertTrue(result.contains("com.example.app1"))
+        assertTrue(result.contains("com.example.app2"))
     }
 
     @Test
-    fun getApps_returnsAppInfoListWhenNoSharedPreferencesApps() {
-        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-        whenever(deviceDataSource.currentApps()).thenReturn(deviceApps)
-
+    fun getEnabledPackageNames_returnsEmptyListWhenNoSharedPreferencesApps() {
         whenever(sharedPreferencesDataSource.currentApps()).thenReturn(emptyList())
 
-        val result = repository.getApps()
+        val result = repository.getEnabledPackageNames()
 
-        assertEquals(2, result.size)
-        assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
-        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+        assertTrue(result.isEmpty())
     }
 
     @Test
@@ -117,14 +110,5 @@ class AppInfoRepositoryTest {
         repository.upsertApp(appInfo)
 
         verify(sharedPreferencesDataSource).upsertApp(appInfo)
-    }
-
-    @Test
-    fun upsertApps_insertsAppInfoList() = runBlocking {
-        val appInfos = listOf(AppInfo("com.example.app1", true), AppInfo("com.example.app2", true))
-
-        repository.upsertApps(appInfos)
-
-        verify(sharedPreferencesDataSource).upsertApps(appInfos)
     }
 }

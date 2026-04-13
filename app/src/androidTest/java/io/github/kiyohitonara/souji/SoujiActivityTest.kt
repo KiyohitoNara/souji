@@ -73,7 +73,7 @@ class SoujiActivityTest {
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
-            repository.upsertApps(listOf(AppInfo("io.github.kiyohitonara.souji", true)))
+            repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
 
             ActivityScenario.launch(SoujiActivity::class.java)
             assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
