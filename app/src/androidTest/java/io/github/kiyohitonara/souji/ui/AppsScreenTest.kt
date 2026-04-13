@@ -22,14 +22,10 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
@@ -41,16 +37,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class AppsScreenTest {
-    @get:Rule
-    val executorTestRule = InstantTaskExecutorRule()
-
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -73,11 +65,6 @@ class AppsScreenTest {
         )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
 
-        val owner = Mockito.mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(appInfoViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)
         }
@@ -91,11 +78,6 @@ class AppsScreenTest {
     fun appListItem_switchToggles() = runBlocking {
         val app = AppInfo("com.example.app", "App", null, false)
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
-
-        val owner = Mockito.mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(appInfoViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)

@@ -26,15 +26,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.SoujiService
@@ -49,7 +44,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 import java.util.concurrent.CountDownLatch
@@ -57,9 +51,6 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
-    @get:Rule
-    val executorTestRule = InstantTaskExecutorRule()
-
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -119,11 +110,6 @@ class MainActivityTest {
 
         val apps = listOf(AppInfo("io.github.kiyohitonara.souji", true))
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(appInfoViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         val countDownLatch = CountDownLatch(1)
         val receiver = object : BroadcastReceiver() {

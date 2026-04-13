@@ -22,32 +22,24 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class AppInfoViewModelTest {
-    @get:Rule
-    val rule = InstantTaskExecutorRule()
-
     @Mock
     private lateinit var repository: AppInfoRepository
 
@@ -56,33 +48,34 @@ class AppInfoViewModelTest {
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
+        whenever(repository.getAppsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = AppInfoViewModel(repository)
     }
 
     @Test
-    fun onCreate_shouldLoadInitialApps() = runBlocking {
+    fun apps_emitsEmptyListInitially() {
+        assertEquals(emptyList<AppInfo>(), viewModel.apps.value)
+    }
+
+    @Test
+    fun apps_emitsAppsFromRepository() = runBlocking {
         val apps = listOf(AppInfo("com.example.app", false))
         whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
+        viewModel = AppInfoViewModel(repository)
 
-        val owner = mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(viewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        val job = launch { viewModel.apps.collect { } }
+        delay(100)
+        job.cancel()
 
-        delay(1000)
-        assertEquals(viewModel.apps.value, apps)
+        assertEquals(apps, viewModel.apps.value)
     }
 
     @Test
     fun upsertApp_shouldCallRepositoryUpsertApp() = runBlocking {
-        val apps = listOf(AppInfo("com.example.app", false))
-        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-
         val app = AppInfo("com.example.app", true)
         viewModel.upsertApp(app)
 
-        delay(1000)
+        delay(100)
         verify(repository).upsertApp(app)
     }
-
 }

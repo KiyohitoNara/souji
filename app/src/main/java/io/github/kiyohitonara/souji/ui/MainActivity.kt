@@ -74,7 +74,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             SoujiTheme {
                 val appInfoViewModel: AppInfoViewModel = hiltViewModel()
-                lifecycle.addObserver(appInfoViewModel)
 
                 val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
                 lifecycle.addObserver(notificationListenerViewModel)

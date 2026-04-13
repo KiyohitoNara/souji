@@ -22,39 +22,27 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-
 @HiltViewModel
-open class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel(), DefaultLifecycleObserver {
-    private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
-    val apps = _apps.asStateFlow()
-
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
-
-        Timber.d("ViewModel is created")
-
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getAppsFlow().collect { appsList ->
-                Timber.d("Getting ${appsList.size} apps")
-
-                _apps.value = appsList
-            }
-        }
-    }
+open class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel() {
+    val apps: StateFlow<List<AppInfo>> = repository.getAppsFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
 
     open fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: ${appInfo.packageName}")
@@ -63,5 +51,4 @@ open class AppInfoViewModel @Inject constructor(private val repository: AppInfoR
             repository.upsertApp(appInfo)
         }
     }
-
 }
