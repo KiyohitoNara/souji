@@ -26,9 +26,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ServiceTestRule
+import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -44,6 +46,12 @@ class SoujiServiceTest {
 
     @Test
     fun onStartCommand_shouldCancelActiveNotifications() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
+            .commit()
+
         val countDownLatch = CountDownLatch(1)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -53,18 +61,17 @@ class SoujiServiceTest {
             }
         }
 
-        val context = ApplicationProvider.getApplicationContext<Context>()
         val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
-            val intent = Intent(ApplicationProvider.getApplicationContext(), SoujiService::class.java)
-            intent.putExtra(SoujiService.EXTRA_CANCELLABLE_NOTIFICATION_PACKAGE_NAMES, arrayOf("io.github.kiyohitonara.souji"))
-
-            serviceRule.startService(intent)
+            serviceRule.startService(Intent(context, SoujiService::class.java))
             assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
         } finally {
             context.unregisterReceiver(receiver)
+            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
+                .commit()
         }
     }
 }

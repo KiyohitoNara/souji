@@ -24,23 +24,15 @@ package io.github.kiyohitonara.souji
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import dagger.hilt.android.AndroidEntryPoint
-import io.github.kiyohitonara.souji.data.AppInfoRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class SoujiActivity : ComponentActivity() {
-    @Inject
-    lateinit var appInfoRepository: AppInfoRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         Timber.d("Activity is created")
 
-        val packageNames = appInfoRepository.getEnabledPackageNames()
-        SoujiService.startService(applicationContext, packageNames)
+        SoujiService.startService(applicationContext)
 
         finishAndRemoveTask()
     }

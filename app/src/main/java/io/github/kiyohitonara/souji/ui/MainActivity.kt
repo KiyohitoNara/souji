@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -104,8 +103,6 @@ fun SoujiApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = SoujiScreen.valueOf(backStackEntry?.destination?.route ?: SoujiScreen.Apps.name)
 
-    val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
-
     NotificationAccessDialog(notificationListenerViewModel)
 
     Scaffold(
@@ -120,8 +117,7 @@ fun SoujiApp(
         floatingActionButton = {
             if (currentScreen == SoujiScreen.Apps) {
                 SoujiFloatingActionButton {
-                    val packageNames = apps.filter { it.isEnabled }.map { it.packageName }
-                    SoujiService.startService(context, packageNames)
+                    SoujiService.startService(context)
                 }
             }
         },
