@@ -82,10 +82,4 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
         sharedPreferences.edit().putStringSet(KEY_APP_PACKAGE_NAMES, current).apply()
     }
 
-    open suspend fun upsertApps(appInfos: List<AppInfo>) {
-        Timber.d("Upserting ${appInfos.size} apps")
-
-        val packageNames = appInfos.filter { it.isEnabled }.map { it.packageName }.toSet()
-        sharedPreferences.edit().putStringSet(KEY_APP_PACKAGE_NAMES, packageNames).apply()
-    }
 }

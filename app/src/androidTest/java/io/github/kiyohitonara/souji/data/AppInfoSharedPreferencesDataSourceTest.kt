@@ -160,30 +160,4 @@ class AppInfoSharedPreferencesDataSourceTest {
         assertTrue(apps.any { it.packageName == "com.example.app2" })
     }
 
-    // upsertApps()
-
-    @Test
-    fun upsertApps_storesOnlyEnabledApps() = runBlocking {
-        dataSource.upsertApps(listOf(AppInfo("com.example.app1", true), AppInfo("com.example.app2", false)))
-
-        val apps = dataSource.currentApps()
-
-        assertEquals(1, apps.size)
-        assertTrue(apps.any { it.packageName == "com.example.app1" })
-        assertFalse(apps.any { it.packageName == "com.example.app2" })
-    }
-
-    @Test
-    fun upsertApps_overwritesPreviousApps() = runBlocking {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.old"))
-            .apply()
-
-        dataSource.upsertApps(listOf(AppInfo("com.example.new", true)))
-
-        val apps = dataSource.currentApps()
-
-        assertFalse(apps.any { it.packageName == "com.example.old" })
-        assertTrue(apps.any { it.packageName == "com.example.new" })
-    }
 }
