@@ -27,8 +27,8 @@ import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -110,12 +110,16 @@ class AppInfoSharedPreferencesDataSourceTest {
     @Test
     fun apps_emitsUpdatedListAfterUpsertApp() = runBlocking {
         val results = mutableListOf<List<AppInfo>>()
+        val initialEmission = CompletableDeferred<Unit>()
 
         val job = launch(Dispatchers.IO) {
-            dataSource.apps.take(2).collect { results.add(it) }
+            dataSource.apps.take(2).collect {
+                results.add(it)
+                initialEmission.complete(Unit)
+            }
         }
-        delay(100) // Wait for the flow to start and emit the initial value
 
+        initialEmission.await()
         dataSource.upsertApp(AppInfo("com.example.app1", true))
         job.join()
 

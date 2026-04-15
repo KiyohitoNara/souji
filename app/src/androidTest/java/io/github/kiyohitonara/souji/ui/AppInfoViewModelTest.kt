@@ -26,8 +26,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -63,11 +63,9 @@ class AppInfoViewModelTest {
         whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
         viewModel = AppInfoViewModel(repository)
 
-        val job = launch { viewModel.apps.collect { } }
-        delay(100)
-        job.cancel()
+        val result = viewModel.apps.first { it.isNotEmpty() }
 
-        assertEquals(apps, viewModel.apps.value)
+        assertEquals(apps, result)
     }
 
     @Test
