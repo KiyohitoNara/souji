@@ -37,12 +37,6 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
         }
     }
 
-    open fun getEnabledPackageNames(): List<String> {
-        Timber.d("Getting enabled package names")
-
-        return sharedPreferencesDataSource.currentApps().map { it.packageName }
-    }
-
     open fun getAppsFlow(): Flow<List<AppInfo>> {
         Timber.d("Getting apps flow")
 

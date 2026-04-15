@@ -54,27 +54,6 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getEnabledPackageNames_returnsPackageNames() {
-        val prefsApps = listOf(AppInfo("com.example.app1", true), AppInfo("com.example.app2", true))
-        whenever(sharedPreferencesDataSource.currentApps()).thenReturn(prefsApps)
-
-        val result = repository.getEnabledPackageNames()
-
-        assertEquals(2, result.size)
-        assertTrue(result.contains("com.example.app1"))
-        assertTrue(result.contains("com.example.app2"))
-    }
-
-    @Test
-    fun getEnabledPackageNames_returnsEmptyListWhenNoSharedPreferencesApps() {
-        whenever(sharedPreferencesDataSource.currentApps()).thenReturn(emptyList())
-
-        val result = repository.getEnabledPackageNames()
-
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
     fun getAppsFlow_returnsAppInfoList() = runBlocking {
         val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
         whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
