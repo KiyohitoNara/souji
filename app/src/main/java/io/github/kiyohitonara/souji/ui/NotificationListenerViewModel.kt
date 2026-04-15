@@ -22,8 +22,6 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
@@ -33,17 +31,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class NotificationListenerViewModel @Inject constructor(private val repository: NotificationListenerRepository) : ViewModel(), DefaultLifecycleObserver {
+class NotificationListenerViewModel @Inject constructor(private val repository: NotificationListenerRepository) : ViewModel() {
     private val _isEnable = MutableStateFlow(false)
     val isEnable = _isEnable.asStateFlow()
-
-    override fun onResume(owner: LifecycleOwner) {
-        super.onResume(owner)
-
-        Timber.d("ViewModel is resumed")
-
-        checkNotificationListener()
-    }
 
     fun checkNotificationListener() {
         Timber.d("Checking notification listener")

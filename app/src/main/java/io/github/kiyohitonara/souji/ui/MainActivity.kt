@@ -75,7 +75,6 @@ class MainActivity : ComponentActivity() {
                 val appInfoViewModel: AppInfoViewModel = hiltViewModel()
 
                 val notificationListenerViewModel: NotificationListenerViewModel = hiltViewModel()
-                lifecycle.addObserver(notificationListenerViewModel)
 
                 SoujiApp(
                     notificationListenerViewModel = notificationListenerViewModel,

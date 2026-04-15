@@ -34,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.kiyohitonara.souji.R
 import timber.log.Timber
@@ -43,6 +45,10 @@ import timber.log.Timber
 fun NotificationAccessDialog(notificationListenerViewModel: NotificationListenerViewModel) {
     val context = LocalContext.current
     val isEnable by notificationListenerViewModel.isEnable.collectAsStateWithLifecycle()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        notificationListenerViewModel.checkNotificationListener()
+    }
 
     if (isEnable.not()) {
         AlertDialog(

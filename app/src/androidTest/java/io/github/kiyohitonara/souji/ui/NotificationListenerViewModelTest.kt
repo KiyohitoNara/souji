@@ -22,7 +22,6 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.lifecycle.LifecycleOwner
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
 import kotlinx.coroutines.flow.first
@@ -34,9 +33,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -70,11 +67,4 @@ class NotificationListenerViewModelTest {
         assertFalse(viewModel.isEnable.first())
     }
 
-    @Test
-    fun onResume_callsCheckNotificationListener() {
-        val lifecycleOwner = mock(LifecycleOwner::class.java)
-        viewModel.onResume(lifecycleOwner)
-
-        verify(repository).isNotificationListenerEnabled()
-    }
 }

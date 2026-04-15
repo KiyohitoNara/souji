@@ -23,13 +23,9 @@
 package io.github.kiyohitonara.souji.ui
 
 import android.provider.Settings
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
 import androidx.test.espresso.intent.rule.IntentsRule
@@ -41,15 +37,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class NotificationAccessDialogTest {
-    @get:Rule
-    val executorTestRule = InstantTaskExecutorRule()
-
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -71,11 +63,6 @@ class NotificationAccessDialogTest {
     fun notificationAccessDialog_showsDialog_whenNotificationAccessIsDisabled() {
         whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
 
-        val owner = Mockito.mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
         composeTestRule.setContent {
             NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
         }
@@ -87,11 +74,6 @@ class NotificationAccessDialogTest {
     fun notificationAccessDialog_doesNotShowsDialog_whenNotificationAccessIsEnabled() {
         whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(true)
 
-        val owner = Mockito.mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
         composeTestRule.setContent {
             NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
         }
@@ -102,11 +84,6 @@ class NotificationAccessDialogTest {
     @Test
     fun notificationAccessDialog_clickConfirmButton_opensSettings() {
         whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
-
-        val owner = Mockito.mock(LifecycleOwner::class.java)
-        val registry = LifecycleRegistry(owner)
-        registry.addObserver(notificationListenerViewModel)
-        registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
         composeTestRule.setContent {
             NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
