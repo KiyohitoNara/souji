@@ -74,8 +74,8 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
 
             AppInfo(
                 packageInfo.packageName,
-                packageInfo.applicationInfo.loadLabel(context.packageManager).toString(),
-                packageInfo.applicationInfo.loadIcon(context.packageManager)
+                packageInfo.applicationInfo?.loadLabel(context.packageManager)?.toString(),
+                packageInfo.applicationInfo?.loadIcon(context.packageManager)
             )
         }
     }
