@@ -26,10 +26,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,14 +42,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -102,6 +111,16 @@ fun SoujiApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = SoujiScreen.valueOf(backStackEntry?.destination?.route ?: SoujiScreen.Apps.name)
 
+    var isSearchActive by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    LaunchedEffect(currentScreen) {
+        if (currentScreen != SoujiScreen.Apps) {
+            isSearchActive = false
+            searchQuery = ""
+        }
+    }
+
     NotificationAccessDialog(notificationListenerViewModel)
 
     Scaffold(
@@ -111,6 +130,13 @@ fun SoujiApp(
                 canNavigateBack = navController.previousBackStackEntry != null,
                 navigateUp = { navController.navigateUp() },
                 navigateTo = { screen -> navController.navigate(screen.name) },
+                isSearchActive = isSearchActive,
+                searchQuery = searchQuery,
+                onSearchToggle = {
+                    isSearchActive = !isSearchActive
+                    if (!isSearchActive) searchQuery = ""
+                },
+                onSearchQueryChange = { searchQuery = it },
             )
         },
         floatingActionButton = {
@@ -126,7 +152,7 @@ fun SoujiApp(
             startDestination = SoujiScreen.Apps.name,
         ) {
             composable(SoujiScreen.Apps.name) {
-                AppsScreen(appInfoViewModel, padding)
+                AppsScreen(appInfoViewModel, padding, searchQuery)
             }
             composable(SoujiScreen.About.name) {
                 AboutScreen(padding)
@@ -142,21 +168,56 @@ fun SoujiAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     navigateTo: (SoujiScreen) -> Unit,
+    isSearchActive: Boolean = false,
+    searchQuery: String = "",
+    onSearchToggle: () -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
         title = {
-            Text(
-                text = stringResource(currentScreen.title),
-                modifier = Modifier.testTag("SoujiAppBarTitle"),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-            )
+            if (isSearchActive && currentScreen == SoujiScreen.Apps) {
+                val focusRequester = remember { FocusRequester() }
+                LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                TextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    placeholder = { Text(stringResource(R.string.search_apps)) },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .testTag("SoujiSearchField"),
+                )
+            } else {
+                Text(
+                    text = stringResource(currentScreen.title),
+                    modifier = Modifier.testTag("SoujiAppBarTitle"),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                )
+            }
         },
         modifier = Modifier.testTag("SoujiAppBar"),
         navigationIcon = {
-            if (canNavigateBack) {
+            if (isSearchActive && currentScreen == SoujiScreen.Apps) {
+                IconButton(
+                    onClick = onSearchToggle,
+                    modifier = Modifier.testTag("SoujiAppBarCloseSearchButton"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.close_search),
+                    )
+                }
+            } else if (canNavigateBack) {
                 IconButton(
                     onClick = { navigateUp() },
                     modifier = Modifier.testTag("SoujiAppBarNavigationButton"),
@@ -169,7 +230,19 @@ fun SoujiAppBar(
             }
         },
         actions = {
-            if (currentScreen == SoujiScreen.Apps) {
+            if (currentScreen == SoujiScreen.Apps && !isSearchActive) {
+                IconButton(
+                    onClick = {
+                        Timber.i("SoujiAppBarSearchButton clicked")
+                        onSearchToggle()
+                    },
+                    modifier = Modifier.testTag("SoujiAppBarSearchButton"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = stringResource(R.string.search),
+                    )
+                }
                 IconButton(
                     onClick = {
                         Timber.i("SoujiAppBarMenuButton clicked")

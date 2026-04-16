@@ -26,6 +26,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -112,6 +113,37 @@ class MainActivityTest {
 
         composeTestRule.onNodeWithTag("SoujiAppBarTitle").assertTextEquals("Souji")
         composeTestRule.onNodeWithTag("SoujiFloatingActionButton").assertExists()
+    }
+
+    @Test
+    fun soujiApp_clickSearchButton_showsSearchField() {
+        composeTestRule.setContent {
+            SoujiApp(
+                notificationListenerViewModel = notificationListenerViewModel,
+                appInfoViewModel = appInfoViewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("SoujiAppBarSearchButton").performClick()
+
+        composeTestRule.onNodeWithTag("SoujiSearchField").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("SoujiAppBarTitle").assertDoesNotExist()
+    }
+
+    @Test
+    fun soujiApp_clickCloseSearchButton_hidesSearchField() {
+        composeTestRule.setContent {
+            SoujiApp(
+                notificationListenerViewModel = notificationListenerViewModel,
+                appInfoViewModel = appInfoViewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("SoujiAppBarSearchButton").performClick()
+        composeTestRule.onNodeWithTag("SoujiAppBarCloseSearchButton").performClick()
+
+        composeTestRule.onNodeWithTag("SoujiSearchField").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("SoujiAppBarTitle").assertIsDisplayed()
     }
 
     @Test

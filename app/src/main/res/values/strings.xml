@@ -31,4 +31,7 @@
     <string name="notification_access_required_explanation">"Notification access" permission is required for this application to work.</string>
     <string name="setting">Setting</string>
     <string name="unknown_app">Unknown app</string>
+    <string name="search">Search</string>
+    <string name="search_apps">Search apps</string>
+    <string name="close_search">Close search</string>
 </resources>

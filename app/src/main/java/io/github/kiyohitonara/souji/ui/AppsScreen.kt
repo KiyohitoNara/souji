@@ -49,7 +49,11 @@ import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppsScreen(appInfoViewModel: AppInfoViewModel, contentPadding: PaddingValues = PaddingValues(0.dp)) {
+fun AppsScreen(
+    appInfoViewModel: AppInfoViewModel,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    searchQuery: String = "",
+) {
     val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
 
     AppList(
@@ -60,6 +64,7 @@ fun AppsScreen(appInfoViewModel: AppInfoViewModel, contentPadding: PaddingValues
             appInfoViewModel.upsertApp(app.copy(isEnabled = isEnabled))
         },
         contentPadding = contentPadding,
+        searchQuery = searchQuery,
     )
 }
 
@@ -69,12 +74,22 @@ fun AppList(
     apps: List<AppInfo>,
     onCheckedChange: ((AppInfo, Boolean) -> Unit)?,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    searchQuery: String = "",
 ) {
+    val filteredApps = if (searchQuery.isBlank()) {
+        apps
+    } else {
+        apps.filter { app ->
+            app.label?.contains(searchQuery, ignoreCase = true) == true ||
+                app.packageName.contains(searchQuery, ignoreCase = true)
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.testTag("AppList"),
         contentPadding = contentPadding,
     ) {
-        items(apps) { app ->
+        items(filteredApps) { app ->
             AppListItem(app, onCheckedChange)
         }
     }

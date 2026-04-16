@@ -84,4 +84,38 @@ class AppsScreenTest {
         composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
         verify(appInfoRepository).upsertApp(app.copy(isEnabled = true))
     }
+
+    @Test
+    fun appsScreen_filtersAppsBySearchQuery() {
+        val apps = listOf(
+            AppInfo("com.example.app1", "Banana", null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+        )
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+
+        composeTestRule.setContent {
+            AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "app")
+        }
+
+        composeTestRule.onNodeWithTag("AppListItem_com.example.app1").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("AppListItem_com.example.app2").assertIsDisplayed()
+    }
+
+    @Test
+    fun appsScreen_hidesNonMatchingApps() {
+        val apps = listOf(
+            AppInfo("com.example.app1", "Banana", null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+        )
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+
+        composeTestRule.setContent {
+            AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "Apple")
+        }
+
+        composeTestRule.onNodeWithTag("AppListItem_com.example.app2").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("AppListItem_com.example.app1").assertDoesNotExist()
+    }
 }
