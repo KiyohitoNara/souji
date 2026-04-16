@@ -34,7 +34,7 @@ open class AppInfoRepository @Inject constructor(private val deviceDataSource: A
             prefsApps.find { it.packageName == deviceApp.packageName }
                 ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
                 ?: deviceApp
-        }
+        }.sortedWith(compareBy(nullsLast()) { it.label })
     }
 
     open fun getAppsFlow(): Flow<List<AppInfo>> {

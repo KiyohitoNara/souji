@@ -83,6 +83,38 @@ class AppInfoRepositoryTest {
     }
 
     @Test
+    fun getAppsFlow_returnsSortedByLabel() = runBlocking {
+        val deviceApps = listOf(
+            AppInfo("com.example.app1", "Banana", null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+            AppInfo("com.example.app3", "Cherry", null, false),
+        )
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
+
+        val result = repository.getAppsFlow().toList().flatten()
+
+        assertEquals("Apple", result[0].label)
+        assertEquals("Banana", result[1].label)
+        assertEquals("Cherry", result[2].label)
+    }
+
+    @Test
+    fun getAppsFlow_sortsNullLabelLast() = runBlocking {
+        val deviceApps = listOf(
+            AppInfo("com.example.app1", null, null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+        )
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
+
+        val result = repository.getAppsFlow().toList().flatten()
+
+        assertEquals("Apple", result[0].label)
+        assertEquals(null, result[1].label)
+    }
+
+    @Test
     fun upsertApp_delegatesToSharedPreferences() = runBlocking {
         val appInfo = AppInfo("com.example.app1", true)
 
