@@ -33,6 +33,8 @@ import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
@@ -42,6 +44,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlinx.coroutines.flow.flowOf
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
@@ -49,9 +52,13 @@ import org.mockito.kotlin.whenever
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val composeTestRule = createComposeRule()
 
     @Mock
@@ -63,12 +70,15 @@ class MainActivityTest {
     @Mock
     private lateinit var appInfoRepository: AppInfoRepository
 
-    @InjectMocks
     private lateinit var appInfoViewModel: AppInfoViewModel
 
     @Before
     fun setup() {
+        hiltRule.inject()
         MockitoAnnotations.openMocks(this)
+        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(true)
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(emptyList()))
+        appInfoViewModel = AppInfoViewModel(appInfoRepository)
     }
 
     @Test
@@ -106,8 +116,6 @@ class MainActivityTest {
 
     @Test
     fun soujiApp_clickFloatingActionButton_startsSoujiService() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
-
         val context = ApplicationProvider.getApplicationContext<Context>()
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))

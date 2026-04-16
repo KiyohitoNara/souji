@@ -35,7 +35,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
@@ -49,9 +48,6 @@ class AppsScreenTest {
     @Mock
     private lateinit var appInfoRepository: AppInfoRepository
 
-    @InjectMocks
-    private lateinit var appInfoViewModel: AppInfoViewModel
-
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
@@ -64,6 +60,7 @@ class AppsScreenTest {
             AppInfo("com.example.app2", "App 2", null, false),
         )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)
@@ -78,6 +75,7 @@ class AppsScreenTest {
     fun appListItem_switchToggles() = runBlocking {
         val app = AppInfo("com.example.app", "App", null, false)
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)
