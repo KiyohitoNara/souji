@@ -30,19 +30,31 @@ import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ServiceTestRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SoujiServiceTest {
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val serviceRule = ServiceTestRule()
+
+    @Before
+    fun setup() {
+        hiltRule.inject()
+    }
 
     @Test
     fun onStartCommand_shouldCancelActiveNotifications() = runBlocking {
