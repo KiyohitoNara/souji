@@ -24,6 +24,7 @@ package io.github.kiyohitonara.souji.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
@@ -67,19 +68,36 @@ open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationCo
     override fun currentApps(): List<AppInfo> {
         Timber.d("Getting apps from shared preferences")
 
-        val packageNames = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
-        return packageNames.map { packageName ->
+        return getStoredPackageNames().map { packageName ->
             Timber.d("Getting app: $packageName")
             AppInfo(packageName, true)
         }
     }
 
+    /**
+     * Upserts the given app information.
+     * If the app is enabled, it will be added to the stored package names.
+     * If the app is disabled, it will be removed from the stored package names.
+     *
+     * @param appInfo The app information to upsert.
+     */
     open suspend fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: ${appInfo.packageName}")
 
-        val current = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet())?.toMutableSet() ?: mutableSetOf()
-        if (appInfo.isEnabled) current.add(appInfo.packageName) else current.remove(appInfo.packageName)
-        sharedPreferences.edit().putStringSet(KEY_APP_PACKAGE_NAMES, current).apply()
+        val updatedPackageNames = getStoredPackageNames().toMutableSet().apply {
+            if (appInfo.isEnabled) {
+                add(appInfo.packageName)
+            } else {
+                remove(appInfo.packageName)
+            }
+        }
+
+        sharedPreferences.edit {
+            putStringSet(KEY_APP_PACKAGE_NAMES, updatedPackageNames)
+        }
     }
 
+    private fun getStoredPackageNames(): Set<String> {
+        return sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
+    }
 }

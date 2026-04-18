@@ -23,6 +23,7 @@
 package io.github.kiyohitonara.souji.data
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -49,12 +50,12 @@ class AppInfoSharedPreferencesDataSourceTest {
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
 
-        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            clear()
+        }
 
         dataSource = AppInfoSharedPreferencesDataSource(context)
     }
-
-    // currentApps()
 
     @Test
     fun currentApps_returnsEmptyListWhenNoAppsStored() {
@@ -63,9 +64,9 @@ class AppInfoSharedPreferencesDataSourceTest {
 
     @Test
     fun currentApps_returnsStoredPackageNames() {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
-            .apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
+        }
 
         val apps = dataSource.currentApps()
 
@@ -76,16 +77,14 @@ class AppInfoSharedPreferencesDataSourceTest {
 
     @Test
     fun currentApps_returnsAppsWithIsEnabledTrue() {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1"))
-            .apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1"))
+        }
 
         val apps = dataSource.currentApps()
 
         assertTrue(apps.all { it.isEnabled })
     }
-
-    // apps Flow — 初期値
 
     @Test
     fun apps_emitsEmptyListInitially() = runBlocking {
@@ -96,9 +95,9 @@ class AppInfoSharedPreferencesDataSourceTest {
 
     @Test
     fun apps_emitsStoredAppsOnSubscribe() = runBlocking {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
-            .apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
+        }
 
         val apps = dataSource.apps.first()
 
@@ -128,8 +127,6 @@ class AppInfoSharedPreferencesDataSourceTest {
         assertTrue(results[1].any { it.packageName == "com.example.app1" })
     }
 
-    // upsertApp()
-
     @Test
     fun upsertApp_addsEnabledApp() = runBlocking {
         dataSource.upsertApp(AppInfo("com.example.app1", true))
@@ -142,9 +139,9 @@ class AppInfoSharedPreferencesDataSourceTest {
 
     @Test
     fun upsertApp_removesDisabledApp() = runBlocking {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1"))
-            .apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1"))
+        }
 
         dataSource.upsertApp(AppInfo("com.example.app1", false))
 
@@ -153,9 +150,9 @@ class AppInfoSharedPreferencesDataSourceTest {
 
     @Test
     fun upsertApp_doesNotAffectOtherApps() = runBlocking {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
-            .apply()
+        PreferenceManager.getDefaultSharedPreferences(context).edit {
+            putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("com.example.app1", "com.example.app2"))
+        }
 
         dataSource.upsertApp(AppInfo("com.example.app1", false))
 
