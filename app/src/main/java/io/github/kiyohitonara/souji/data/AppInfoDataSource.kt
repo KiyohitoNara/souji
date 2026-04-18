@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Kiyohito Nara
+ * Copyright (c) 2026 Kiyohito Nara
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,17 @@ package io.github.kiyohitonara.souji.data
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Data source for app information.
+ */
 interface AppInfoDataSource {
+    /**
+     * A flow of the list of app information. The flow emits a new list whenever the app information changes.
+     */
     val apps: Flow<List<AppInfo>>
 
+    /**
+     * Returns the current list of app information.
+     */
     fun currentApps(): List<AppInfo>
 }
