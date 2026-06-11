@@ -40,6 +40,7 @@ open class SoujiService : NotificationListenerService() {
         const val ACTION_NOTIFICATIONS_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATIONS_CANCELLED"
         const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAMES"
         const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
+        const val EXTRA_CANCELLED_NOTIFICATION_COUNT = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_COUNT"
 
         /** Starts the service to cancel notifications for enabled apps. */
         fun startService(context: Context) {
@@ -51,9 +52,7 @@ open class SoujiService : NotificationListenerService() {
         Timber.d("Service is started")
 
         val packageNames = dataSource.currentApps().map { it.packageName }
-        if (packageNames.isNotEmpty()) {
-            cancelActiveNotifications(packageNames)
-        }
+        cancelActiveNotifications(packageNames)
 
         stopSelf()
 
@@ -63,16 +62,18 @@ open class SoujiService : NotificationListenerService() {
     private fun cancelActiveNotifications(packageNames: List<String>) {
         Timber.d("Cancelling active notifications")
 
-        packageNames.forEach { packageName ->
+        val cancelledCount = packageNames.sumOf { packageName ->
             cancelActiveNotification(packageName)
         }
 
         val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
+        intent.setPackage(packageName)
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES, packageNames.toTypedArray())
+        intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_COUNT, cancelledCount)
         sendBroadcast(intent)
     }
 
-    private fun cancelActiveNotification(packageName: String) {
+    private fun cancelActiveNotification(packageName: String): Int {
         Timber.d("Cancelling active notification: $packageName")
 
         val cancellableNotifications = activeNotifications.filter { it.packageName == packageName }
@@ -83,5 +84,7 @@ open class SoujiService : NotificationListenerService() {
         val intent = Intent(ACTION_NOTIFICATION_CANCELLED)
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME, packageName)
         sendBroadcast(intent)
+
+        return cancellableNotifications.size
     }
 }

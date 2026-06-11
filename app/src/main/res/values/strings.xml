@@ -25,6 +25,11 @@
     <string name="app_name">Souji</string>
     <string name="back">Back</string>
     <string name="clean">Clean</string>
+    <string name="notifications_cleaned_none">No notifications to clean up</string>
+    <plurals name="notifications_cleaned">
+        <item quantity="one">Cleaned up %d notification</item>
+        <item quantity="other">Cleaned up %d notifications</item>
+    </plurals>
     <string name="disabled_shortcut">Shortcut is disabled</string>
     <string name="more">More</string>
     <string name="notification_access_required">Notification access required</string>

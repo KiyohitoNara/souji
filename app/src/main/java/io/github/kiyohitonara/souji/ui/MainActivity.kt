@@ -22,6 +22,10 @@
 
 package io.github.kiyohitonara.souji.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,16 +45,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -60,6 +68,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -70,6 +79,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.R
 import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.ui.theme.SoujiTheme
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -107,6 +117,34 @@ fun SoujiApp(
     navController: NavHostController = rememberNavController(),
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(receiverContext: Context, intent: Intent) {
+                Timber.i("Notifications cancelled broadcast received")
+
+                val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
+                val message = if (count == 0) {
+                    context.getString(R.string.notifications_cleaned_none)
+                } else {
+                    context.resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
+                }
+
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(message)
+                }
+            }
+        }
+
+        val filter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = SoujiScreen.valueOf(backStackEntry?.destination?.route ?: SoujiScreen.Apps.name)
@@ -124,6 +162,7 @@ fun SoujiApp(
     NotificationAccessDialog(notificationListenerViewModel)
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             SoujiAppBar(
                 currentScreen = currentScreen,

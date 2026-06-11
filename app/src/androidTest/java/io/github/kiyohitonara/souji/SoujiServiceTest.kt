@@ -86,4 +86,38 @@ class SoujiServiceTest {
                 .commit()
         }
     }
+
+    @Test
+    fun onStartCommand_shouldBroadcastCancelledCount() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
+            .commit()
+
+        val countDownLatch = CountDownLatch(1)
+        var cancelledCount = -1
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == SoujiService.ACTION_NOTIFICATIONS_CANCELLED) {
+                    cancelledCount = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, -1)
+                    countDownLatch.countDown()
+                }
+            }
+        }
+
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
+        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+        try {
+            serviceRule.startService(Intent(context, SoujiService::class.java))
+            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+            assertTrue(cancelledCount >= 0)
+        } finally {
+            context.unregisterReceiver(receiver)
+            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
+                .commit()
+        }
+    }
 }
