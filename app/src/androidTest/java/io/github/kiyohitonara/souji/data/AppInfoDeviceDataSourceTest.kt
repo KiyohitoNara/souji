@@ -74,32 +74,40 @@ class AppInfoDeviceDataSourceTest {
     }
 
     @Test
-    fun apps_emitsInitialListMatchingCurrentApps() = runBlocking {
-        val fromCurrentApps = dataSource.currentApps().map { it.packageName }.sorted()
-        val fromFlow = dataSource.apps.first().map { it.packageName }.sorted()
+    fun apps_emitsInitialListMatchingCurrentApps() =
+        runBlocking {
+            val fromCurrentApps = dataSource.currentApps().map { it.packageName }.sorted()
+            val fromFlow =
+                dataSource.apps
+                    .first()
+                    .map { it.packageName }
+                    .sorted()
 
-        assertEquals(fromCurrentApps, fromFlow)
-    }
-
-    @Test
-    fun apps_emitsAppsWithIsEnabledFalse() = runBlocking {
-        val apps = dataSource.apps.first()
-
-        assertFalse(apps.any { it.isEnabled })
-    }
+            assertEquals(fromCurrentApps, fromFlow)
+        }
 
     @Test
-    fun apps_emitsAppsWithLabel() = runBlocking {
-        val apps = dataSource.apps.first()
+    fun apps_emitsAppsWithIsEnabledFalse() =
+        runBlocking {
+            val apps = dataSource.apps.first()
 
-        assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
-    }
+            assertFalse(apps.any { it.isEnabled })
+        }
 
     @Test
-    fun apps_includesTestApp() = runBlocking {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val apps = dataSource.apps.first()
+    fun apps_emitsAppsWithLabel() =
+        runBlocking {
+            val apps = dataSource.apps.first()
 
-        assertNotNull(apps.find { it.packageName == context.packageName })
-    }
+            assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
+        }
+
+    @Test
+    fun apps_includesTestApp() =
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val apps = dataSource.apps.first()
+
+            assertNotNull(apps.find { it.packageName == context.packageName })
+        }
 }

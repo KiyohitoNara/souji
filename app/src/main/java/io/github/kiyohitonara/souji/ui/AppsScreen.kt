@@ -76,14 +76,15 @@ fun AppList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     searchQuery: String = "",
 ) {
-    val filteredApps = if (searchQuery.isBlank()) {
-        apps
-    } else {
-        apps.filter { app ->
-            app.label?.contains(searchQuery, ignoreCase = true) == true ||
-                app.packageName.contains(searchQuery, ignoreCase = true)
+    val filteredApps =
+        if (searchQuery.isBlank()) {
+            apps
+        } else {
+            apps.filter { app ->
+                app.label?.contains(searchQuery, ignoreCase = true) == true ||
+                    app.packageName.contains(searchQuery, ignoreCase = true)
+            }
         }
-    }
 
     LazyColumn(
         modifier = Modifier.testTag("AppList"),
@@ -121,16 +122,16 @@ fun AppListItem(
             Image(
                 painter = rememberDrawablePainter(app.icon),
                 contentDescription = app.label,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp),
             )
         },
         trailingContent = {
             Switch(
                 checked = app.isEnabled,
                 onCheckedChange = { onCheckedChange?.invoke(app, it) },
-                modifier = Modifier.testTag("AppListItemSwitch_${app.packageName}")
+                modifier = Modifier.testTag("AppListItemSwitch_${app.packageName}"),
             )
-        }
+        },
     )
 }
 

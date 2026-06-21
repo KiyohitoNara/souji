@@ -35,48 +35,58 @@ import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
 import javax.inject.Inject
 
-open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
-    override val apps: Flow<List<AppInfo>> = callbackFlow {
-        // Send the initial value
-        val result = trySend(currentApps())
-        if (result.isFailure) {
-            Timber.e("Failed to send initial value")
-        }
-
-        // Listen for changes
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
+open class AppInfoDeviceDataSource
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : AppInfoDataSource {
+        override val apps: Flow<List<AppInfo>> =
+            callbackFlow {
+                // Send the initial value
                 val result = trySend(currentApps())
                 if (result.isFailure) {
-                    Timber.e("Failed to send value")
+                    Timber.e("Failed to send initial value")
+                }
+
+                // Listen for changes
+                val receiver =
+                    object : BroadcastReceiver() {
+                        override fun onReceive(
+                            context: Context,
+                            intent: Intent,
+                        ) {
+                            val result = trySend(currentApps())
+                            if (result.isFailure) {
+                                Timber.e("Failed to send value")
+                            }
+                        }
+                    }
+
+                // Register the receiver
+                val filter =
+                    IntentFilter().apply {
+                        addAction(Intent.ACTION_PACKAGE_ADDED)
+                        addAction(Intent.ACTION_PACKAGE_REMOVED)
+                        addAction(Intent.ACTION_PACKAGE_CHANGED)
+                        addDataScheme("package")
+                    }
+                context.registerReceiver(receiver, filter)
+                awaitClose {
+                    context.unregisterReceiver(receiver)
                 }
             }
-        }
 
-        // Register the receiver
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_CHANGED)
-            addDataScheme("package")
-        }
-        context.registerReceiver(receiver, filter)
-        awaitClose {
-            context.unregisterReceiver(receiver)
-        }
-    }
+        override fun currentApps(): List<AppInfo> {
+            Timber.d("Getting apps from device")
 
-    override fun currentApps(): List<AppInfo> {
-        Timber.d("Getting apps from device")
+            return context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
+                Timber.d("Getting app: ${packageInfo.packageName}")
 
-        return context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
-            Timber.d("Getting app: ${packageInfo.packageName}")
-
-            AppInfo(
-                packageInfo.packageName,
-                packageInfo.applicationInfo?.loadLabel(context.packageManager)?.toString(),
-                packageInfo.applicationInfo?.loadIcon(context.packageManager)
-            )
+                AppInfo(
+                    packageInfo.packageName,
+                    packageInfo.applicationInfo?.loadLabel(context.packageManager)?.toString(),
+                    packageInfo.applicationInfo?.loadIcon(context.packageManager),
+                )
+            }
         }
     }
-}

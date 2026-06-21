@@ -58,22 +58,24 @@ class AppInfoViewModelTest {
     }
 
     @Test
-    fun apps_emitsAppsFromRepository() = runBlocking {
-        val apps = listOf(AppInfo("com.example.app", false))
-        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-        viewModel = AppInfoViewModel(repository)
+    fun apps_emitsAppsFromRepository() =
+        runBlocking {
+            val apps = listOf(AppInfo("com.example.app", false))
+            whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
+            viewModel = AppInfoViewModel(repository)
 
-        val result = viewModel.apps.first { it.isNotEmpty() }
+            val result = viewModel.apps.first { it.isNotEmpty() }
 
-        assertEquals(apps, result)
-    }
+            assertEquals(apps, result)
+        }
 
     @Test
-    fun upsertApp_shouldCallRepositoryUpsertApp() = runBlocking {
-        val app = AppInfo("com.example.app", true)
-        viewModel.upsertApp(app)
+    fun upsertApp_shouldCallRepositoryUpsertApp() =
+        runBlocking {
+            val app = AppInfo("com.example.app", true)
+            viewModel.upsertApp(app)
 
-        delay(100)
-        verify(repository).upsertApp(app)
-    }
+            delay(100)
+            verify(repository).upsertApp(app)
+        }
 }

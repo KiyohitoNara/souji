@@ -48,7 +48,11 @@ open class SoujiService : NotificationListenerService() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         Timber.d("Service is started")
 
         val packageNames = dataSource.currentApps().map { it.packageName }
@@ -62,9 +66,10 @@ open class SoujiService : NotificationListenerService() {
     private fun cancelActiveNotifications(packageNames: List<String>) {
         Timber.d("Cancelling active notifications")
 
-        val cancelledCount = packageNames.sumOf { packageName ->
-            cancelActiveNotification(packageName)
-        }
+        val cancelledCount =
+            packageNames.sumOf { packageName ->
+                cancelActiveNotification(packageName)
+            }
 
         val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
         intent.setPackage(packageName)

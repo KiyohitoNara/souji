@@ -36,19 +36,25 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-open class AppInfoViewModel @Inject constructor(private val repository: AppInfoRepository) : ViewModel() {
-    val apps: StateFlow<List<AppInfo>> = repository.getAppsFlow()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList(),
-        )
+open class AppInfoViewModel
+    @Inject
+    constructor(
+        private val repository: AppInfoRepository,
+    ) : ViewModel() {
+        val apps: StateFlow<List<AppInfo>> =
+            repository
+                .getAppsFlow()
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = emptyList(),
+                )
 
-    open fun upsertApp(appInfo: AppInfo) {
-        Timber.d("Upserting app: ${appInfo.packageName}")
+        open fun upsertApp(appInfo: AppInfo) {
+            Timber.d("Upserting app: ${appInfo.packageName}")
 
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.upsertApp(appInfo)
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.upsertApp(appInfo)
+            }
         }
     }
-}

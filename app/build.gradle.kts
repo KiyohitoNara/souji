@@ -28,6 +28,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.aboutlibraries.plugin)
+    alias(libs.plugins.ktlint)
 }
 
 android {

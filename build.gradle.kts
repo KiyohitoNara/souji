@@ -29,5 +29,6 @@ plugins {
     alias(libs.plugins.kotlin.plugin.compose) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.aboutlibraries.plugin) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 true // Needed to make the Suppress annotation work for the plugins block

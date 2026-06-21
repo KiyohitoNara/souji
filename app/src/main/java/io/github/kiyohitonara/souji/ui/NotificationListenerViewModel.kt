@@ -31,13 +31,17 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class NotificationListenerViewModel @Inject constructor(private val repository: NotificationListenerRepository) : ViewModel() {
-    private val _isEnable = MutableStateFlow(false)
-    val isEnable = _isEnable.asStateFlow()
+class NotificationListenerViewModel
+    @Inject
+    constructor(
+        private val repository: NotificationListenerRepository,
+    ) : ViewModel() {
+        private val _isEnable = MutableStateFlow(false)
+        val isEnable = _isEnable.asStateFlow()
 
-    fun checkNotificationListener() {
-        Timber.d("Checking notification listener")
+        fun checkNotificationListener() {
+            Timber.d("Checking notification listener")
 
-        _isEnable.value = repository.isNotificationListenerEnabled()
+            _isEnable.value = repository.isNotificationListenerEnabled()
+        }
     }
-}

@@ -28,10 +28,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import javax.inject.Inject
 
-open class NotificationListenerRepository @Inject constructor(@ApplicationContext private val context: Context) {
-    open fun isNotificationListenerEnabled(): Boolean {
-        Timber.d("Checking notification listener")
+open class NotificationListenerRepository
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) {
+        open fun isNotificationListenerEnabled(): Boolean {
+            Timber.d("Checking notification listener")
 
-        return NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+            return NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+        }
     }
-}

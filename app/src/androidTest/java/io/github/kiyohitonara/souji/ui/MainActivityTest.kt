@@ -31,21 +31,21 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.preference.PreferenceManager
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlinx.coroutines.flow.flowOf
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
@@ -87,7 +87,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel
+                appInfoViewModel = appInfoViewModel,
             )
         }
 
@@ -103,7 +103,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel
+                appInfoViewModel = appInfoViewModel,
             )
         }
 
@@ -120,7 +120,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel
+                appInfoViewModel = appInfoViewModel,
             )
         }
 
@@ -135,7 +135,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel
+                appInfoViewModel = appInfoViewModel,
             )
         }
 
@@ -149,18 +149,26 @@ class MainActivityTest {
     @Test
     fun soujiApp_clickFloatingActionButton_startsSoujiService() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
+        PreferenceManager
+            .getDefaultSharedPreferences(context)
+            .edit()
             .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
             .commit()
 
         val countDownLatch = CountDownLatch(1)
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED && intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji") {
-                    countDownLatch.countDown()
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(
+                    context: Context,
+                    intent: Intent,
+                ) {
+                    if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji"
+                    ) {
+                        countDownLatch.countDown()
+                    }
                 }
             }
-        }
 
         val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
@@ -169,7 +177,7 @@ class MainActivityTest {
             composeTestRule.setContent {
                 SoujiApp(
                     notificationListenerViewModel = notificationListenerViewModel,
-                    appInfoViewModel = appInfoViewModel
+                    appInfoViewModel = appInfoViewModel,
                 )
             }
 
@@ -177,7 +185,9 @@ class MainActivityTest {
             assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
         } finally {
             context.unregisterReceiver(receiver)
-            PreferenceManager.getDefaultSharedPreferences(context).edit()
+            PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .edit()
                 .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
                 .commit()
         }

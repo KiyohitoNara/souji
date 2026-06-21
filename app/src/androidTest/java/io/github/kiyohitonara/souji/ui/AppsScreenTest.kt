@@ -55,10 +55,11 @@ class AppsScreenTest {
 
     @Test
     fun appsScreen_displaysAppList() {
-        val apps = listOf(
-            AppInfo("com.example.app1", "App 1", null, true),
-            AppInfo("com.example.app2", "App 2", null, false),
-        )
+        val apps =
+            listOf(
+                AppInfo("com.example.app1", "App 1", null, true),
+                AppInfo("com.example.app2", "App 2", null, false),
+            )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
         val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 
@@ -72,25 +73,27 @@ class AppsScreenTest {
     }
 
     @Test
-    fun appListItem_switchToggles() = runBlocking {
-        val app = AppInfo("com.example.app", "App", null, false)
-        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+    fun appListItem_switchToggles() =
+        runBlocking {
+            val app = AppInfo("com.example.app", "App", null, false)
+            whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
+            val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 
-        composeTestRule.setContent {
-            AppsScreen(appInfoViewModel = appInfoViewModel)
+            composeTestRule.setContent {
+                AppsScreen(appInfoViewModel = appInfoViewModel)
+            }
+
+            composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
+            verify(appInfoRepository).upsertApp(app.copy(isEnabled = true))
         }
-
-        composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
-        verify(appInfoRepository).upsertApp(app.copy(isEnabled = true))
-    }
 
     @Test
     fun appsScreen_filtersAppsBySearchQuery() {
-        val apps = listOf(
-            AppInfo("com.example.app1", "Banana", null, false),
-            AppInfo("com.example.app2", "Apple", null, false),
-        )
+        val apps =
+            listOf(
+                AppInfo("com.example.app1", "Banana", null, false),
+                AppInfo("com.example.app2", "Apple", null, false),
+            )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
         val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 
@@ -104,10 +107,11 @@ class AppsScreenTest {
 
     @Test
     fun appsScreen_hidesNonMatchingApps() {
-        val apps = listOf(
-            AppInfo("com.example.app1", "Banana", null, false),
-            AppInfo("com.example.app2", "Apple", null, false),
-        )
+        val apps =
+            listOf(
+                AppInfo("com.example.app1", "Banana", null, false),
+                AppInfo("com.example.app2", "Apple", null, false),
+            )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
         val appInfoViewModel = AppInfoViewModel(appInfoRepository)
 

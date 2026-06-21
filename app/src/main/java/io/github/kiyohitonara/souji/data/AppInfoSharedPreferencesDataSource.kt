@@ -34,70 +34,75 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
 
-open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
-    companion object {
-        const val KEY_APP_PACKAGE_NAMES = "io.github.kiyohitonara.souji.APP_PACKAGE_NAMES"
-    }
-
-    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-    override val apps: Flow<List<AppInfo>> = callbackFlow {
-        // Send the initial value
-        val result = trySend(currentApps())
-        if (result.isFailure) {
-            Timber.e("Failed to send initial value")
+open class AppInfoSharedPreferencesDataSource
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : AppInfoDataSource {
+        companion object {
+            const val KEY_APP_PACKAGE_NAMES = "io.github.kiyohitonara.souji.APP_PACKAGE_NAMES"
         }
 
-        // Listen for changes
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_APP_PACKAGE_NAMES) {
+        private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+        override val apps: Flow<List<AppInfo>> =
+            callbackFlow {
+                // Send the initial value
                 val result = trySend(currentApps())
                 if (result.isFailure) {
-                    Timber.e("Failed to send value")
+                    Timber.e("Failed to send initial value")
+                }
+
+                // Listen for changes
+                val listener =
+                    SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                        if (key == KEY_APP_PACKAGE_NAMES) {
+                            val result = trySend(currentApps())
+                            if (result.isFailure) {
+                                Timber.e("Failed to send value")
+                            }
+                        }
+                    }
+
+                // Register the listener
+                sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+                awaitClose {
+                    sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
                 }
             }
-        }
 
-        // Register the listener
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        awaitClose {
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+        override fun currentApps(): List<AppInfo> {
+            Timber.d("Getting apps from shared preferences")
 
-    override fun currentApps(): List<AppInfo> {
-        Timber.d("Getting apps from shared preferences")
-
-        return getStoredPackageNames().map { packageName ->
-            Timber.d("Getting app: $packageName")
-            AppInfo(packageName, true)
-        }
-    }
-
-    /**
-     * Upserts the given app information.
-     * If the app is enabled, it will be added to the stored package names.
-     * If the app is disabled, it will be removed from the stored package names.
-     *
-     * @param appInfo The app information to upsert.
-     */
-    open suspend fun upsertApp(appInfo: AppInfo) {
-        Timber.d("Upserting app: ${appInfo.packageName}")
-
-        val updatedPackageNames = getStoredPackageNames().toMutableSet().apply {
-            if (appInfo.isEnabled) {
-                add(appInfo.packageName)
-            } else {
-                remove(appInfo.packageName)
+            return getStoredPackageNames().map { packageName ->
+                Timber.d("Getting app: $packageName")
+                AppInfo(packageName, true)
             }
         }
 
-        sharedPreferences.edit {
-            putStringSet(KEY_APP_PACKAGE_NAMES, updatedPackageNames)
-        }
-    }
+        /**
+         * Upserts the given app information.
+         * If the app is enabled, it will be added to the stored package names.
+         * If the app is disabled, it will be removed from the stored package names.
+         *
+         * @param appInfo The app information to upsert.
+         */
+        open suspend fun upsertApp(appInfo: AppInfo) {
+            Timber.d("Upserting app: ${appInfo.packageName}")
 
-    private fun getStoredPackageNames(): Set<String> {
-        return sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
+            val updatedPackageNames =
+                getStoredPackageNames().toMutableSet().apply {
+                    if (appInfo.isEnabled) {
+                        add(appInfo.packageName)
+                    } else {
+                        remove(appInfo.packageName)
+                    }
+                }
+
+            sharedPreferences.edit {
+                putStringSet(KEY_APP_PACKAGE_NAMES, updatedPackageNames)
+            }
+        }
+
+        private fun getStoredPackageNames(): Set<String> = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
     }
-}

@@ -58,27 +58,34 @@ class SoujiActivityTest {
     }
 
     @Test
-    fun onCreate_startsService() = runBlocking {
-        val countDownLatch = CountDownLatch(1)
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED && intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji") {
-                    countDownLatch.countDown()
+    fun onCreate_startsService() =
+        runBlocking {
+            val countDownLatch = CountDownLatch(1)
+            val receiver =
+                object : BroadcastReceiver() {
+                    override fun onReceive(
+                        context: Context,
+                        intent: Intent,
+                    ) {
+                        if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji"
+                        ) {
+                            countDownLatch.countDown()
+                        }
+                    }
                 }
+
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
+            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+            try {
+                repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
+
+                ActivityScenario.launch(SoujiActivity::class.java)
+                assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+            } finally {
+                context.unregisterReceiver(receiver)
             }
         }
-
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
-        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
-
-        try {
-            repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
-
-            ActivityScenario.launch(SoujiActivity::class.java)
-            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
-        } finally {
-            context.unregisterReceiver(receiver)
-        }
-    }
 }

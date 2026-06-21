@@ -104,7 +104,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class SoujiScreen(@StringRes val title: Int) {
+enum class SoujiScreen(
+    @StringRes val title: Int,
+) {
     Apps(title = R.string.app_name),
     About(title = R.string.about),
 }
@@ -121,22 +123,27 @@ fun SoujiApp(
     val snackbarHostState = remember { SnackbarHostState() }
 
     DisposableEffect(context) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(receiverContext: Context, intent: Intent) {
-                Timber.i("Notifications cancelled broadcast received")
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(
+                    receiverContext: Context,
+                    intent: Intent,
+                ) {
+                    Timber.i("Notifications cancelled broadcast received")
 
-                val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
-                val message = if (count == 0) {
-                    context.getString(R.string.notifications_cleaned_none)
-                } else {
-                    context.resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
-                }
+                    val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
+                    val message =
+                        if (count == 0) {
+                            context.getString(R.string.notifications_cleaned_none)
+                        } else {
+                            context.resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
+                        }
 
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(message)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(message)
+                    }
                 }
             }
-        }
 
         val filter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
         ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -224,16 +231,18 @@ fun SoujiAppBar(
                     onValueChange = onSearchQueryChange,
                     placeholder = { Text(stringResource(R.string.search_apps)) },
                     singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .testTag("SoujiSearchField"),
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .testTag("SoujiSearchField"),
                 )
             } else {
                 Text(
@@ -312,10 +321,11 @@ fun SoujiAppBar(
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.primary,
-        ),
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                titleContentColor = MaterialTheme.colorScheme.primary,
+            ),
     )
 }
 
