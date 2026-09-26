@@ -25,15 +25,19 @@ package io.github.kiyohitonara.souji.ui
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 @Composable
 fun AboutScreen(contentPadding: PaddingValues = PaddingValues(0.dp)) {
+    val libraries by produceLibraries()
+
     LibrariesContainer(
+        libraries = libraries,
         modifier = Modifier.fillMaxSize(),
         contentPadding = contentPadding,
-        showLicenseBadges = false,
     )
 }

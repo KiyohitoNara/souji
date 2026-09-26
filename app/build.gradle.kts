@@ -24,7 +24,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.aboutlibraries.plugin)
@@ -33,12 +32,12 @@ plugins {
 
 android {
     namespace = "io.github.kiyohitonara.souji"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.kiyohitonara.souji"
-        minSdk = 23
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
 
@@ -63,11 +62,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         buildConfig = true
@@ -79,14 +75,15 @@ android {
             excludes += "/META-INF/**/*"
         }
     }
-    applicationVariants.all {
-        val variant = this
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .forEach { output ->
-                val outputFileName = "Souji_${variant.versionName}.apk"
-                output.outputFileName = outputFileName
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        val mainOutput =
+            variant.outputs.first {
+                it.outputType == com.android.build.api.variant.VariantOutputConfiguration.OutputType.SINGLE
             }
+        mainOutput.outputFileName.set("Souji_${mainOutput.versionName.get()}.apk")
     }
 }
 
