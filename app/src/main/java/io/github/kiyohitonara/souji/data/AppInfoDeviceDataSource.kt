@@ -26,7 +26,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.channels.awaitClose
@@ -79,7 +78,7 @@ open class AppInfoDeviceDataSource
         override fun currentApps(): List<AppInfo> {
             Timber.d("Getting apps from device")
 
-            return context.packageManager.getInstalledPackages(PackageManager.GET_META_DATA).map { packageInfo ->
+            return context.packageManager.getInstalledPackages(0).map { packageInfo ->
                 Timber.d("Getting app: ${packageInfo.packageName}")
 
                 AppInfo(
