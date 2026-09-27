@@ -89,6 +89,7 @@ androidComponents {
 dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)
@@ -97,14 +98,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
-    implementation(libs.accompanist.drawablepainter)
-
-    implementation(libs.androidx.navigation.compose)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -112,15 +105,16 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.androidx.lifecycle.compiler)
 
-    implementation(libs.androidx.preference)
-
-    implementation(libs.timber)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
 
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.preference)
+    implementation(libs.accompanist.drawablepainter)
+    implementation(libs.timber)
 
     testImplementation(libs.junit)
 
@@ -141,4 +135,7 @@ dependencies {
 
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.android)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
