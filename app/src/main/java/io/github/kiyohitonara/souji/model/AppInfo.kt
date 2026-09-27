@@ -24,6 +24,14 @@ package io.github.kiyohitonara.souji.model
 
 import android.graphics.drawable.Drawable
 
+/**
+ * Information about an app whose notifications can be cleaned up.
+ *
+ * @property packageName The package name of the app.
+ * @property label The display name of the app.
+ * @property icon The icon of the app.
+ * @property isEnabled Whether notifications from this app should be cancelled.
+ */
 data class AppInfo(
     val packageName: String,
     val label: String?,
