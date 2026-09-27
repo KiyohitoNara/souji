@@ -28,9 +28,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -41,6 +43,8 @@ open class AppInfoDeviceDataSource
     ) : AppInfoDataSource {
         override val apps: Flow<List<AppInfo>> =
             callbackFlow {
+                val producerScope = this
+
                 // Send the initial value
                 val result = trySend(currentApps())
                 if (result.isFailure) {
@@ -54,9 +58,11 @@ open class AppInfoDeviceDataSource
                             context: Context,
                             intent: Intent,
                         ) {
-                            val result = trySend(currentApps())
-                            if (result.isFailure) {
-                                Timber.e("Failed to send value")
+                            producerScope.launch(Dispatchers.IO) {
+                                val result = trySend(currentApps())
+                                if (result.isFailure) {
+                                    Timber.e("Failed to send value")
+                                }
                             }
                         }
                     }
