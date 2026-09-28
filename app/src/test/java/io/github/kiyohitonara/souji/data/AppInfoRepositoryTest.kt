@@ -22,7 +22,6 @@
 
 package io.github.kiyohitonara.souji.data
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -30,13 +29,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@RunWith(AndroidJUnit4::class)
 class AppInfoRepositoryTest {
     @Mock
     private lateinit var deviceDataSource: AppInfoDeviceDataSource
