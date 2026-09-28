@@ -72,7 +72,7 @@ open class SoujiService : NotificationListenerService() {
             }
 
         val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
-        intent.setPackage(packageName)
+        intent.setPackage(this.packageName)
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES, packageNames.toTypedArray())
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_COUNT, cancelledCount)
         sendBroadcast(intent)
@@ -87,6 +87,7 @@ open class SoujiService : NotificationListenerService() {
         }
 
         val intent = Intent(ACTION_NOTIFICATION_CANCELLED)
+        intent.setPackage(this.packageName)
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME, packageName)
         sendBroadcast(intent)
 
