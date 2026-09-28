@@ -70,7 +70,7 @@ class AppInfoViewModelTest {
         }
 
     @Test
-    fun upsertApp_shouldCallRepositoryUpsertApp() =
+    fun upsertApp_delegatesToRepository() =
         runBlocking {
             val app = AppInfo("com.example.app", true)
             viewModel.upsertApp(app)
