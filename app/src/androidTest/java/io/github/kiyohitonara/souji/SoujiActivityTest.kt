@@ -33,7 +33,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
-import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -42,6 +41,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -60,6 +60,8 @@ class SoujiActivityTest {
     @Test
     fun onCreate_startsService() =
         runBlocking {
+            val testAppPackageName = "io.github.kiyohitonara.souji"
+
             val countDownLatch = CountDownLatch(1)
             val receiver =
                 object : BroadcastReceiver() {
@@ -68,7 +70,7 @@ class SoujiActivityTest {
                         intent: Intent,
                     ) {
                         if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji"
+                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == testAppPackageName
                         ) {
                             countDownLatch.countDown()
                         }
@@ -80,7 +82,7 @@ class SoujiActivityTest {
             context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
             try {
-                repository.upsertApp(AppInfo("io.github.kiyohitonara.souji", true))
+                repository.upsertApp(AppInfo(testAppPackageName, true))
 
                 ActivityScenario.launch(SoujiActivity::class.java)
                 assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
