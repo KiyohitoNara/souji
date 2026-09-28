@@ -22,26 +22,27 @@
 
 package io.github.kiyohitonara.souji.ui
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class AppInfoViewModelTest {
     @Mock
     private lateinit var repository: AppInfoRepository
@@ -52,9 +53,15 @@ class AppInfoViewModelTest {
 
     @Before
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
         MockitoAnnotations.openMocks(this)
         whenever(repository.getAppsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = AppInfoViewModel(repository, testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -64,7 +71,7 @@ class AppInfoViewModelTest {
 
     @Test
     fun apps_emitsAppsFromRepository() =
-        runBlocking {
+        runTest(testDispatcher) {
             val apps = listOf(AppInfo("com.example.app", false))
             whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
             viewModel = AppInfoViewModel(repository, testDispatcher)
@@ -74,7 +81,6 @@ class AppInfoViewModelTest {
             assertEquals(apps, result)
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun upsertApp_delegatesToRepository() =
         runTest(testDispatcher) {
