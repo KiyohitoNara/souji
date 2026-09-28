@@ -33,6 +33,9 @@ open class NotificationListenerRepository
     constructor(
         @ApplicationContext private val context: Context,
     ) {
+        /**
+         * Returns whether this app is enabled as a notification listener.
+         */
         open fun isNotificationListenerEnabled(): Boolean {
             Timber.d("Checking notification listener")
 
