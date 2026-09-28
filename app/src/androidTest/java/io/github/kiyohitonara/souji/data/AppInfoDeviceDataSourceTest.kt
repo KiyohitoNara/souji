@@ -37,11 +37,12 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class AppInfoDeviceDataSourceTest {
+    private lateinit var context: Context
     private lateinit var dataSource: AppInfoDeviceDataSource
 
     @Before
     fun setup() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        context = ApplicationProvider.getApplicationContext()
         dataSource = AppInfoDeviceDataSource(context)
     }
 
@@ -105,7 +106,6 @@ class AppInfoDeviceDataSourceTest {
     @Test
     fun apps_includesTestApp() =
         runBlocking {
-            val context = ApplicationProvider.getApplicationContext<Context>()
             val apps = dataSource.apps.first()
 
             assertNotNull(apps.find { it.packageName == context.packageName })
