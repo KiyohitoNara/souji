@@ -41,6 +41,9 @@ open class AppInfoViewModel
     constructor(
         private val repository: AppInfoRepository,
     ) : ViewModel() {
+        /**
+         * A state flow of the list of app information.
+         */
         val apps: StateFlow<List<AppInfo>> =
             repository
                 .getAppsFlow()
@@ -50,6 +53,11 @@ open class AppInfoViewModel
                     initialValue = emptyList(),
                 )
 
+        /**
+         * Upserts the given app information.
+         *
+         * @param appInfo The app information to upsert.
+         */
         open fun upsertApp(appInfo: AppInfo) {
             Timber.d("Upserting app: ${appInfo.packageName}")
 
