@@ -46,6 +46,10 @@ open class AppInfoRepository
                         ?: deviceApp
                 }.sortedWith(compareBy(nullsLast()) { it.label })
 
+        /**
+         * Returns a flow of the list of app information, merging the apps installed on the device
+         * with their enabled state stored in shared preferences.
+         */
         open fun getAppsFlow(): Flow<List<AppInfo>> {
             Timber.d("Getting apps flow")
 
@@ -54,6 +58,11 @@ open class AppInfoRepository
             }
         }
 
+        /**
+         * Upserts the given app information.
+         *
+         * @param appInfo The app information to upsert.
+         */
         open suspend fun upsertApp(appInfo: AppInfo) {
             Timber.d("Upserting app: ${appInfo.packageName}")
 
