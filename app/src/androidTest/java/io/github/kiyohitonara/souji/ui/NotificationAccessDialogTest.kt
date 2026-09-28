@@ -59,35 +59,31 @@ class NotificationAccessDialogTest {
         MockitoAnnotations.openMocks(this)
     }
 
-    @Test
-    fun notificationAccessDialog_showsDialog_whenNotificationAccessIsDisabled() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
+    private fun renderDialog(isNotificationAccessEnabled: Boolean) {
+        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(isNotificationAccessEnabled)
 
         composeTestRule.setContent {
             NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
         }
+    }
+
+    @Test
+    fun notificationAccessDialog_showsWhenAccessDisabled() {
+        renderDialog(isNotificationAccessEnabled = false)
 
         composeTestRule.onNodeWithTag("NotificationAccessDialog").assertExists()
     }
 
     @Test
-    fun notificationAccessDialog_doesNotShowsDialog_whenNotificationAccessIsEnabled() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(true)
-
-        composeTestRule.setContent {
-            NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
-        }
+    fun notificationAccessDialog_hidesWhenAccessEnabled() {
+        renderDialog(isNotificationAccessEnabled = true)
 
         composeTestRule.onNodeWithTag("NotificationAccessDialog").assertDoesNotExist()
     }
 
     @Test
     fun notificationAccessDialog_clickConfirmButton_opensSettings() {
-        whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(false)
-
-        composeTestRule.setContent {
-            NotificationAccessDialog(notificationListenerViewModel = notificationListenerViewModel)
-        }
+        renderDialog(isNotificationAccessEnabled = false)
 
         composeTestRule.onNodeWithTag("NotificationAccessDialogConfirmButton").performClick()
         Intents.intended(hasAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
