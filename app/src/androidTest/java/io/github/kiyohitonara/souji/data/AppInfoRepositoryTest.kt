@@ -24,8 +24,8 @@ package io.github.kiyohitonara.souji.data
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -61,7 +61,7 @@ class AppInfoRepositoryTest {
             val prefsApps = listOf(AppInfo("com.example.app1", true))
             whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(prefsApps))
 
-            val result = repository.getAppsFlow().toList().flatten()
+            val result = repository.getAppsFlow().first()
 
             assertEquals(2, result.size)
             assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
@@ -76,7 +76,7 @@ class AppInfoRepositoryTest {
 
             whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            val result = repository.getAppsFlow().toList().flatten()
+            val result = repository.getAppsFlow().first()
 
             assertEquals(2, result.size)
             assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
@@ -95,7 +95,7 @@ class AppInfoRepositoryTest {
             whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
             whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            val result = repository.getAppsFlow().toList().flatten()
+            val result = repository.getAppsFlow().first()
 
             assertEquals("Apple", result[0].label)
             assertEquals("Banana", result[1].label)
@@ -113,7 +113,7 @@ class AppInfoRepositoryTest {
             whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
             whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            val result = repository.getAppsFlow().toList().flatten()
+            val result = repository.getAppsFlow().first()
 
             assertEquals("Apple", result[0].label)
             assertEquals(null, result[1].label)
