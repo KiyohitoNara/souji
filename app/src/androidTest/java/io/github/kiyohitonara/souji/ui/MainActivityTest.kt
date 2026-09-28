@@ -40,6 +40,7 @@ import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -79,7 +80,7 @@ class MainActivityTest {
         MockitoAnnotations.openMocks(this)
         whenever(notificationListenerRepository.isNotificationListenerEnabled()).thenReturn(true)
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(emptyList()))
-        appInfoViewModel = AppInfoViewModel(appInfoRepository)
+        appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
     }
 
     @Test

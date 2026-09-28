@@ -26,8 +26,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
+import io.github.kiyohitonara.souji.di.IoDispatcher
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -40,6 +41,7 @@ open class AppInfoViewModel
     @Inject
     constructor(
         private val repository: AppInfoRepository,
+        @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     ) : ViewModel() {
         /**
          * A state flow of the list of app information.
@@ -61,7 +63,7 @@ open class AppInfoViewModel
         open fun upsertApp(appInfo: AppInfo) {
             Timber.d("Upserting app: ${appInfo.packageName}")
 
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(ioDispatcher) {
                 repository.upsertApp(appInfo)
             }
         }

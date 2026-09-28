@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -61,7 +62,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app2", "App 2", null, false),
             )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)
@@ -77,7 +78,7 @@ class AppsScreenTest {
         runBlocking {
             val app = AppInfo("com.example.app", "App", null, false)
             whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
-            val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+            val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
 
             composeTestRule.setContent {
                 AppsScreen(appInfoViewModel = appInfoViewModel)
@@ -95,7 +96,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app2", "Apple", null, false),
             )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "app")
@@ -113,7 +114,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app2", "Apple", null, false),
             )
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository)
+        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "Apple")

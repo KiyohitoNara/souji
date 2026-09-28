@@ -25,10 +25,13 @@ package io.github.kiyohitonara.souji.ui
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -43,13 +46,15 @@ class AppInfoViewModelTest {
     @Mock
     private lateinit var repository: AppInfoRepository
 
+    private val testDispatcher = StandardTestDispatcher()
+
     private lateinit var viewModel: AppInfoViewModel
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
         whenever(repository.getAppsFlow()).thenReturn(flowOf(emptyList()))
-        viewModel = AppInfoViewModel(repository)
+        viewModel = AppInfoViewModel(repository, testDispatcher)
     }
 
     @Test
@@ -62,20 +67,22 @@ class AppInfoViewModelTest {
         runBlocking {
             val apps = listOf(AppInfo("com.example.app", false))
             whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-            viewModel = AppInfoViewModel(repository)
+            viewModel = AppInfoViewModel(repository, testDispatcher)
 
             val result = viewModel.apps.first { it.isNotEmpty() }
 
             assertEquals(apps, result)
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun upsertApp_delegatesToRepository() =
-        runBlocking {
+        runTest(testDispatcher) {
             val app = AppInfo("com.example.app", true)
             viewModel.upsertApp(app)
 
-            delay(100)
+            advanceUntilIdle()
+
             verify(repository).upsertApp(app)
         }
 }
