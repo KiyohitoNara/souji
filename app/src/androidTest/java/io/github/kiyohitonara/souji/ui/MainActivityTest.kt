@@ -83,14 +83,18 @@ class MainActivityTest {
         appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
     }
 
-    @Test
-    fun soujiApp_clickAboutMenuItem_navigatesToAboutScreen() {
+    private fun setSoujiAppContent() {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
                 appInfoViewModel = appInfoViewModel,
             )
         }
+    }
+
+    @Test
+    fun soujiApp_clickAboutMenuItem_navigatesToAboutScreen() {
+        setSoujiAppContent()
 
         composeTestRule.onNodeWithTag("SoujiAppBarMenuButton").performClick()
         composeTestRule.onNodeWithTag("SoujiAppBarAboutMenuItem").performClick()
@@ -101,12 +105,7 @@ class MainActivityTest {
 
     @Test
     fun soujiApp_clickBackButton_navigatesBackToAppsScreen() {
-        composeTestRule.setContent {
-            SoujiApp(
-                notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel,
-            )
-        }
+        setSoujiAppContent()
 
         composeTestRule.onNodeWithTag("SoujiAppBarMenuButton").performClick()
         composeTestRule.onNodeWithTag("SoujiAppBarAboutMenuItem").performClick()
@@ -118,12 +117,7 @@ class MainActivityTest {
 
     @Test
     fun soujiApp_clickSearchButton_showsSearchField() {
-        composeTestRule.setContent {
-            SoujiApp(
-                notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel,
-            )
-        }
+        setSoujiAppContent()
 
         composeTestRule.onNodeWithTag("SoujiAppBarSearchButton").performClick()
 
@@ -133,12 +127,7 @@ class MainActivityTest {
 
     @Test
     fun soujiApp_clickCloseSearchButton_hidesSearchField() {
-        composeTestRule.setContent {
-            SoujiApp(
-                notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel,
-            )
-        }
+        setSoujiAppContent()
 
         composeTestRule.onNodeWithTag("SoujiAppBarSearchButton").performClick()
         composeTestRule.onNodeWithTag("SoujiAppBarCloseSearchButton").performClick()
@@ -175,12 +164,7 @@ class MainActivityTest {
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
         try {
-            composeTestRule.setContent {
-                SoujiApp(
-                    notificationListenerViewModel = notificationListenerViewModel,
-                    appInfoViewModel = appInfoViewModel,
-                )
-            }
+            setSoujiAppContent()
 
             composeTestRule.onNodeWithTag("SoujiFloatingActionButton").performClick()
             assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
