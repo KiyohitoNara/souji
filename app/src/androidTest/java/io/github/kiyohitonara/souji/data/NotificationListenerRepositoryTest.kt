@@ -41,7 +41,7 @@ class NotificationListenerRepositoryTest {
     }
 
     @Test
-    fun isNotificationListenerEnabled_returnsFalse_whenListenerIsNotEnabled() {
+    fun isNotificationListenerEnabled_returnsFalseWhenNotEnabled() {
         assertFalse(repository.isNotificationListenerEnabled())
     }
 }
