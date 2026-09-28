@@ -51,21 +51,34 @@ class SoujiServiceTest {
     @get:Rule(order = 1)
     val serviceRule = ServiceTestRule()
 
+    private lateinit var context: Context
+
     @Before
     fun setup() {
         hiltRule.inject()
+        context = ApplicationProvider.getApplicationContext()
+    }
+
+    private fun storeTestAppPackageName() {
+        PreferenceManager
+            .getDefaultSharedPreferences(context)
+            .edit()
+            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf(TEST_APP_PACKAGE_NAME))
+            .commit()
+    }
+
+    private fun clearTestAppPackageName() {
+        PreferenceManager
+            .getDefaultSharedPreferences(context)
+            .edit()
+            .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
+            .commit()
     }
 
     @Test
-    fun onStartCommand_shouldCancelActiveNotifications() =
+    fun onStartCommand_cancelsActiveNotifications() =
         runBlocking {
-            val context = ApplicationProvider.getApplicationContext<Context>()
-
-            PreferenceManager
-                .getDefaultSharedPreferences(context)
-                .edit()
-                .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
-                .commit()
+            storeTestAppPackageName()
 
             val countDownLatch = CountDownLatch(1)
             val receiver =
@@ -75,7 +88,7 @@ class SoujiServiceTest {
                         intent: Intent,
                     ) {
                         if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji"
+                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == TEST_APP_PACKAGE_NAME
                         ) {
                             countDownLatch.countDown()
                         }
@@ -90,24 +103,14 @@ class SoujiServiceTest {
                 assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
             } finally {
                 context.unregisterReceiver(receiver)
-                PreferenceManager
-                    .getDefaultSharedPreferences(context)
-                    .edit()
-                    .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
-                    .commit()
+                clearTestAppPackageName()
             }
         }
 
     @Test
-    fun onStartCommand_shouldBroadcastCancelledCount() =
+    fun onStartCommand_broadcastsCancelledCount() =
         runBlocking {
-            val context = ApplicationProvider.getApplicationContext<Context>()
-
-            PreferenceManager
-                .getDefaultSharedPreferences(context)
-                .edit()
-                .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
-                .commit()
+            storeTestAppPackageName()
 
             val countDownLatch = CountDownLatch(1)
             var cancelledCount = -1
@@ -133,11 +136,11 @@ class SoujiServiceTest {
                 assertTrue(cancelledCount >= 0)
             } finally {
                 context.unregisterReceiver(receiver)
-                PreferenceManager
-                    .getDefaultSharedPreferences(context)
-                    .edit()
-                    .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
-                    .commit()
+                clearTestAppPackageName()
             }
         }
+
+    private companion object {
+        const val TEST_APP_PACKAGE_NAME = "io.github.kiyohitonara.souji"
+    }
 }
