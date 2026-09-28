@@ -54,6 +54,11 @@ class AppsScreenTest {
         MockitoAnnotations.openMocks(this)
     }
 
+    private fun createViewModel(apps: List<AppInfo>): AppInfoViewModel {
+        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
+        return AppInfoViewModel(appInfoRepository, Dispatchers.IO)
+    }
+
     @Test
     fun appsScreen_displaysAppList() {
         val apps =
@@ -61,8 +66,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app1", "App 1", null, true),
                 AppInfo("com.example.app2", "App 2", null, false),
             )
-        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
+        val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel)
@@ -77,8 +81,7 @@ class AppsScreenTest {
     fun appListItem_switchToggles() =
         runBlocking {
             val app = AppInfo("com.example.app", "App", null, false)
-            whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(listOf(app)))
-            val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
+            val appInfoViewModel = createViewModel(listOf(app))
 
             composeTestRule.setContent {
                 AppsScreen(appInfoViewModel = appInfoViewModel)
@@ -95,8 +98,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app1", "Banana", null, false),
                 AppInfo("com.example.app2", "Apple", null, false),
             )
-        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
+        val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "app")
@@ -113,8 +115,7 @@ class AppsScreenTest {
                 AppInfo("com.example.app1", "Banana", null, false),
                 AppInfo("com.example.app2", "Apple", null, false),
             )
-        whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
-        val appInfoViewModel = AppInfoViewModel(appInfoRepository, Dispatchers.IO)
+        val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
             AppsScreen(appInfoViewModel = appInfoViewModel, searchQuery = "Apple")
