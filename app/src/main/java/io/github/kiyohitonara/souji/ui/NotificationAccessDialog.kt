@@ -44,13 +44,13 @@ import timber.log.Timber
 @Composable
 fun NotificationAccessDialog(notificationListenerViewModel: NotificationListenerViewModel) {
     val context = LocalContext.current
-    val isEnable by notificationListenerViewModel.isEnable.collectAsStateWithLifecycle()
+    val isEnabled by notificationListenerViewModel.isEnabled.collectAsStateWithLifecycle()
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         notificationListenerViewModel.checkNotificationListener()
     }
 
-    if (isEnable.not()) {
+    if (isEnabled.not()) {
         AlertDialog(
             onDismissRequest = { },
             confirmButton = {

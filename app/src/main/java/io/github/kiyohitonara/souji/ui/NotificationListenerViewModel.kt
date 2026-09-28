@@ -36,12 +36,19 @@ class NotificationListenerViewModel
     constructor(
         private val repository: NotificationListenerRepository,
     ) : ViewModel() {
-        private val _isEnable = MutableStateFlow(false)
-        val isEnable = _isEnable.asStateFlow()
+        private val _isEnabled = MutableStateFlow(false)
 
+        /**
+         * A state flow of whether this app is enabled as a notification listener.
+         */
+        val isEnabled = _isEnabled.asStateFlow()
+
+        /**
+         * Checks whether this app is enabled as a notification listener and updates [isEnabled].
+         */
         fun checkNotificationListener() {
             Timber.d("Checking notification listener")
 
-            _isEnable.value = repository.isNotificationListenerEnabled()
+            _isEnabled.value = repository.isNotificationListenerEnabled()
         }
     }

@@ -50,22 +50,22 @@ class NotificationListenerViewModelTest {
     }
 
     @Test
-    fun isEnable_returnsTrue_whenNotificationListenerEnabled() =
+    fun isEnabled_returnsTrueWhenListenerEnabled() =
         runBlocking {
             whenever(repository.isNotificationListenerEnabled()).thenReturn(true)
 
             viewModel.checkNotificationListener()
 
-            assertTrue(viewModel.isEnable.first())
+            assertTrue(viewModel.isEnabled.first())
         }
 
     @Test
-    fun isEnable_returnsFalse_whenNotificationListenerNotEnabled() =
+    fun isEnabled_returnsFalseWhenListenerNotEnabled() =
         runBlocking {
             whenever(repository.isNotificationListenerEnabled()).thenReturn(false)
 
             viewModel.checkNotificationListener()
 
-            assertFalse(viewModel.isEnable.first())
+            assertFalse(viewModel.isEnabled.first())
         }
 }
