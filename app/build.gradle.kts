@@ -141,6 +141,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.hilt.android.testing)
+    kspTest(libs.hilt.android.compiler)
 
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.android.compiler)

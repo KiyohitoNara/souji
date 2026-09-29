@@ -22,29 +22,35 @@
 
 package io.github.kiyohitonara.souji
 
+import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidTest
-@RunWith(AndroidJUnit4::class)
+@Config(application = HiltTestApplication::class)
+@RunWith(RobolectricTestRunner::class)
 class SoujiActivityTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
@@ -77,17 +83,26 @@ class SoujiActivityTest {
                     }
                 }
 
-            val context = ApplicationProvider.getApplicationContext<Context>()
+            val application = ApplicationProvider.getApplicationContext<Application>()
             val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
-            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+            application.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
             try {
                 repository.upsertApp(AppInfo(testAppPackageName, true))
 
-                ActivityScenario.launch(SoujiActivity::class.java)
+                Robolectric.buildActivity(SoujiActivity::class.java).create()
+
+                val startedServiceIntent = shadowOf(application).peekNextStartedService()
+                assertNotNull(startedServiceIntent)
+
+                Robolectric
+                    .buildService(SoujiService::class.java, startedServiceIntent)
+                    .create()
+                    .startCommand(0, 0)
+
                 assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
             } finally {
-                context.unregisterReceiver(receiver)
+                application.unregisterReceiver(receiver)
             }
         }
 }
