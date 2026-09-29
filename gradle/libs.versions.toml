@@ -23,6 +23,7 @@ ksp = "2.3.12"
 ktlint = "14.2.0"
 mockito-android = "5.24.0"
 mockito-kotlin = "6.4.0"
+robolectric = "4.17"
 timber = "5.0.1"
 
 [libraries]
@@ -65,6 +66,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockito-android" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 [plugins]
