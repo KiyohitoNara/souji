@@ -28,10 +28,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.ServiceTestRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
@@ -39,17 +38,18 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @HiltAndroidTest
-@RunWith(AndroidJUnit4::class)
+@Config(application = HiltTestApplication::class)
+@RunWith(RobolectricTestRunner::class)
 class SoujiServiceTest {
-    @get:Rule(order = 0)
+    @get:Rule
     val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule(order = 1)
-    val serviceRule = ServiceTestRule()
 
     private lateinit var context: Context
 
@@ -73,6 +73,13 @@ class SoujiServiceTest {
             .edit()
             .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
             .commit()
+    }
+
+    private fun startSoujiService() {
+        Robolectric
+            .buildService(SoujiService::class.java, Intent(context, SoujiService::class.java))
+            .create()
+            .startCommand(0, 0)
     }
 
     @Test
@@ -99,7 +106,7 @@ class SoujiServiceTest {
             context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
             try {
-                serviceRule.startService(Intent(context, SoujiService::class.java))
+                startSoujiService()
                 assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
             } finally {
                 context.unregisterReceiver(receiver)
@@ -131,7 +138,7 @@ class SoujiServiceTest {
             context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
 
             try {
-                serviceRule.startService(Intent(context, SoujiService::class.java))
+                startSoujiService()
                 assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
                 assertTrue(cancelledCount >= 0)
             } finally {
