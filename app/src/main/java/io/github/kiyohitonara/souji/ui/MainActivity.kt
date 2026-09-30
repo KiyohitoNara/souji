@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        Timber.d("Activity is created")
+        Timber.d("Activity created")
 
         setContent {
             SoujiTheme {
@@ -131,7 +131,7 @@ fun SoujiApp(
                     receiverContext: Context,
                     intent: Intent,
                 ) {
-                    Timber.i("Notifications cancelled broadcast received")
+                    Timber.i("Notifications-cancelled broadcast received")
 
                     val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
                     val message =

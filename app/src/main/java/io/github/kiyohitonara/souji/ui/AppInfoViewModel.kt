@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -61,8 +60,6 @@ open class AppInfoViewModel
          * @param appInfo The app information to upsert.
          */
         open fun upsertApp(appInfo: AppInfo) {
-            Timber.d("Upserting app: ${appInfo.packageName}")
-
             viewModelScope.launch(ioDispatcher) {
                 repository.upsertApp(appInfo)
             }

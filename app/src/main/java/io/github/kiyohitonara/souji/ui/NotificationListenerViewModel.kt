@@ -27,7 +27,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,8 +46,6 @@ class NotificationListenerViewModel
          * Checks whether this app is enabled as a notification listener and updates [isEnabled].
          */
         fun checkNotificationListener() {
-            Timber.d("Checking notification listener")
-
             _isEnabled.value = repository.isNotificationListenerEnabled()
         }
     }

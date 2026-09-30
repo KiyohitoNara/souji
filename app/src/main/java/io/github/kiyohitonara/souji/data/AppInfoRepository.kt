@@ -64,8 +64,6 @@ open class AppInfoRepository
          * @param appInfo The app information to upsert.
          */
         open suspend fun upsertApp(appInfo: AppInfo) {
-            Timber.d("Upserting app: ${appInfo.packageName}")
-
             sharedPreferencesDataSource.upsertApp(appInfo)
         }
     }

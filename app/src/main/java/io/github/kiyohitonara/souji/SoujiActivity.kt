@@ -30,7 +30,7 @@ class SoujiActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Timber.d("Activity is created")
+        Timber.d("Activity created")
 
         SoujiService.startService(applicationContext)
 

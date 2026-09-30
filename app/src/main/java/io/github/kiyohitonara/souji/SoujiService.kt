@@ -53,7 +53,7 @@ open class SoujiService : NotificationListenerService() {
         flags: Int,
         startId: Int,
     ): Int {
-        Timber.d("Service is started")
+        Timber.d("Service started")
 
         val packageNames = dataSource.currentApps().map { it.packageName }
         cancelActiveNotifications(packageNames)
