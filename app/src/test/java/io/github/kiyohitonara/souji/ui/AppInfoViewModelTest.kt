@@ -54,6 +54,7 @@ class AppInfoViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+
         MockitoAnnotations.openMocks(this)
         whenever(repository.getAppsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = AppInfoViewModel(repository, testDispatcher)
@@ -73,8 +74,8 @@ class AppInfoViewModelTest {
     fun apps_emitsAppsFromRepository() = runTest(testDispatcher) {
         val apps = listOf(AppInfo("com.example.app", false))
         whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-        viewModel = AppInfoViewModel(repository, testDispatcher)
 
+        viewModel = AppInfoViewModel(repository, testDispatcher)
         val result = viewModel.apps.first { it.isNotEmpty() }
 
         assertEquals(apps, result)

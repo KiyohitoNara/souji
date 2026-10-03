@@ -36,23 +36,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-open class AppInfoViewModel
-@Inject
-constructor(
+open class AppInfoViewModel @Inject constructor(
     private val repository: AppInfoRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     /**
      * A state flow of the list of app information.
      */
-    val apps: StateFlow<List<AppInfo>> =
-        repository
-            .getAppsFlow()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList(),
-            )
+    val apps: StateFlow<List<AppInfo>> = repository
+        .getAppsFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
 
     /**
      * Upserts the given app information.
