@@ -32,6 +32,7 @@ import io.github.kiyohitonara.souji.model.AppInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
@@ -49,7 +50,7 @@ open class AppInfoDeviceDataSource
                 // currentApps() results are always sent in the order they were requested.
                 val refreshRequests = Channel<Unit>(Channel.CONFLATED)
                 launch(Dispatchers.IO) {
-                    for (request in refreshRequests) {
+                    refreshRequests.consumeEach { _ ->
                         val result = trySend(currentApps())
                         if (result.isFailure) {
                             Timber.e("Failed to send value")
