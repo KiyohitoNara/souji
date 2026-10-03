@@ -12,7 +12,7 @@
 - **Dependency Injection**: Dagger Hilt
 - **Build System**: Gradle (Android Gradle Plugin)
 - **Format**: ktlint (via `org.jlleitschuh.gradle.ktlint`)
-- **Lint**: ktlint (via `org.jlleitschuh.gradle.ktlint`)
+- **Lint**: ktlint (via `org.jlleitschuh.gradle.ktlint`) / Android Lint (via Android Gradle Plugin)
 - **Test**: JUnit (unit tests) / Espresso (instrumented tests)
 
 ## Development Workflow
@@ -41,6 +41,7 @@ This project follows GitLab Flow.
 **Lint:**
 ```bash
 ./gradlew ktlintCheck
+./gradlew lintDebug
 ```
 
 **Test:**
