@@ -28,19 +28,20 @@ import kotlinx.coroutines.flow.combine
 import timber.log.Timber
 import javax.inject.Inject
 
-open class AppInfoRepository
-@Inject
-constructor(
+open class AppInfoRepository @Inject constructor(
     private val deviceDataSource: AppInfoDeviceDataSource,
     private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource,
 ) {
-    private fun mergeApps(deviceApps: List<AppInfo>, prefsApps: List<AppInfo>): List<AppInfo> = deviceApps
-        .map { deviceApp ->
-            prefsApps
-                .find { it.packageName == deviceApp.packageName }
-                ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
-                ?: deviceApp
-        }.sortedWith(compareBy(nullsLast()) { it.label })
+    private fun mergeApps(deviceApps: List<AppInfo>, prefsApps: List<AppInfo>): List<AppInfo> {
+        val prefsMap = prefsApps.associateBy { it.packageName }
+        val mergedApps = deviceApps.map { deviceApp ->
+            prefsMap[deviceApp.packageName]?.let { prefsApp ->
+                deviceApp.copy(isEnabled = prefsApp.isEnabled)
+            } ?: deviceApp
+        }
+
+        return mergedApps.sortedWith(compareBy(nullsLast()) { it.label })
+    }
 
     /**
      * Returns a flow of the list of app information, merging the apps installed on the device
