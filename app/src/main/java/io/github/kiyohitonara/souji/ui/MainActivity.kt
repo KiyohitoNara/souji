@@ -66,6 +66,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -119,28 +120,27 @@ fun SoujiApp(
     navController: NavHostController = rememberNavController(),
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     DisposableEffect(context) {
-        val receiver =
-            object : BroadcastReceiver() {
-                override fun onReceive(receiverContext: Context, intent: Intent) {
-                    Timber.i("Notifications-cancelled broadcast received")
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(receiverContext: Context, intent: Intent) {
+                Timber.i("Notifications-cancelled broadcast received")
 
-                    val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
-                    val message =
-                        if (count == 0) {
-                            context.getString(R.string.notifications_cleaned_none)
-                        } else {
-                            context.resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
-                        }
+                val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
+                val message = if (count == 0) {
+                    resources.getString(R.string.notifications_cleaned_none)
+                } else {
+                    resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
+                }
 
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(message)
-                    }
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(message)
                 }
             }
+        }
 
         val filter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
         ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -228,15 +228,13 @@ fun SoujiAppBar(
                     onValueChange = onSearchQueryChange,
                     placeholder = { Text(stringResource(R.string.search_apps)) },
                     singleLine = true,
-                    colors =
-                    TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                     ),
-                    modifier =
-                    Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                         .testTag("SoujiSearchField"),
@@ -318,8 +316,7 @@ fun SoujiAppBar(
                 }
             }
         },
-        colors =
-        TopAppBarDefaults.topAppBarColors(
+        colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.primary,
         ),

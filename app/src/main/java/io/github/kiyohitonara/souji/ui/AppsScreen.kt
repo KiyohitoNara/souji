@@ -76,7 +76,7 @@ fun AppList(
     } else {
         apps.filter { app ->
             app.label?.contains(searchQuery, ignoreCase = true) == true ||
-                    app.packageName.contains(searchQuery, ignoreCase = true)
+                app.packageName.contains(searchQuery, ignoreCase = true)
         }
     }
 
@@ -132,10 +132,10 @@ private fun AppsScreenPreview() {
     SoujiTheme {
         AppList(
             apps =
-                listOf(
-                    AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
-                    AppInfo("com.example.app", "Example", null, false),
-                ),
+            listOf(
+                AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
+                AppInfo("com.example.app", "Example", null, false),
+            ),
             onCheckedChange = null,
         )
     }
