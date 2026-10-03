@@ -72,7 +72,7 @@ private val lightScheme =
         surfaceContainerLow = surfaceContainerLowLight,
         surfaceContainer = surfaceContainerLight,
         surfaceContainerHigh = surfaceContainerHighLight,
-        surfaceContainerHighest = surfaceContainerHighestLight,
+        surfaceContainerHighest = surfaceContainerHighestLight
     )
 
 private val darkScheme =
@@ -111,7 +111,7 @@ private val darkScheme =
         surfaceContainerLow = surfaceContainerLowDark,
         surfaceContainer = surfaceContainerDark,
         surfaceContainerHigh = surfaceContainerHighDark,
-        surfaceContainerHighest = surfaceContainerHighestDark,
+        surfaceContainerHighest = surfaceContainerHighestDark
     )
 
 private val mediumContrastLightColorScheme =
@@ -150,7 +150,7 @@ private val mediumContrastLightColorScheme =
         surfaceContainerLow = surfaceContainerLowLightMediumContrast,
         surfaceContainer = surfaceContainerLightMediumContrast,
         surfaceContainerHigh = surfaceContainerHighLightMediumContrast,
-        surfaceContainerHighest = surfaceContainerHighestLightMediumContrast,
+        surfaceContainerHighest = surfaceContainerHighestLightMediumContrast
     )
 
 private val highContrastLightColorScheme =
@@ -189,7 +189,7 @@ private val highContrastLightColorScheme =
         surfaceContainerLow = surfaceContainerLowLightHighContrast,
         surfaceContainer = surfaceContainerLightHighContrast,
         surfaceContainerHigh = surfaceContainerHighLightHighContrast,
-        surfaceContainerHighest = surfaceContainerHighestLightHighContrast,
+        surfaceContainerHighest = surfaceContainerHighestLightHighContrast
     )
 
 private val mediumContrastDarkColorScheme =
@@ -228,7 +228,7 @@ private val mediumContrastDarkColorScheme =
         surfaceContainerLow = surfaceContainerLowDarkMediumContrast,
         surfaceContainer = surfaceContainerDarkMediumContrast,
         surfaceContainerHigh = surfaceContainerHighDarkMediumContrast,
-        surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast,
+        surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast
     )
 
 private val highContrastDarkColorScheme =
@@ -267,7 +267,7 @@ private val highContrastDarkColorScheme =
         surfaceContainerLow = surfaceContainerLowDarkHighContrast,
         surfaceContainer = surfaceContainerDarkHighContrast,
         surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
-        surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
+        surfaceContainerHighest = surfaceContainerHighestDarkHighContrast
     )
 
 @Composable
@@ -275,7 +275,7 @@ fun SoujiTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val colorScheme =
         when {
@@ -298,6 +298,6 @@ fun SoujiTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content,
+        content = content
     )
 }

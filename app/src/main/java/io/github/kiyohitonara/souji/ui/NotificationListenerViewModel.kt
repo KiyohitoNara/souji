@@ -25,27 +25,26 @@ package io.github.kiyohitonara.souji.ui
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import javax.inject.Inject
 
 @HiltViewModel
 class NotificationListenerViewModel
-    @Inject
-    constructor(
-        private val repository: NotificationListenerRepository,
-    ) : ViewModel() {
-        private val _isEnabled = MutableStateFlow(false)
+@Inject
+constructor(private val repository: NotificationListenerRepository) :
+    ViewModel() {
+    private val _isEnabled = MutableStateFlow(false)
 
-        /**
-         * A state flow of whether this app is enabled as a notification listener.
-         */
-        val isEnabled = _isEnabled.asStateFlow()
+    /**
+     * A state flow of whether this app is enabled as a notification listener.
+     */
+    val isEnabled = _isEnabled.asStateFlow()
 
-        /**
-         * Checks whether this app is enabled as a notification listener and updates [isEnabled].
-         */
-        fun checkNotificationListener() {
-            _isEnabled.value = repository.isNotificationListenerEnabled()
-        }
+    /**
+     * Checks whether this app is enabled as a notification listener and updates [isEnabled].
+     */
+    fun checkNotificationListener() {
+        _isEnabled.value = repository.isNotificationListenerEnabled()
     }
+}

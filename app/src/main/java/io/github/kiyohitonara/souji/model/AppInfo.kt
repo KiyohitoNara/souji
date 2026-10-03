@@ -32,11 +32,6 @@ import android.graphics.drawable.Drawable
  * @property icon The icon of the app.
  * @property isEnabled Whether notifications from this app should be cancelled.
  */
-data class AppInfo(
-    val packageName: String,
-    val label: String?,
-    val icon: Drawable?,
-    val isEnabled: Boolean = false,
-) {
+data class AppInfo(val packageName: String, val label: String?, val icon: Drawable?, val isEnabled: Boolean = false) {
     constructor(packageName: String, isEnabled: Boolean) : this(packageName, null, null, isEnabled)
 }

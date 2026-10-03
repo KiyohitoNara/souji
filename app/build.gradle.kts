@@ -89,7 +89,7 @@ android {
                     "--add-opens=java.base/sun.security.util=ALL-UNNAMED",
                     "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
                     "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
-                    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED"
                 )
             }
         }

@@ -29,6 +29,7 @@ import android.content.IntentFilter
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
@@ -37,73 +38,68 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 open class AppInfoDeviceDataSource
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
-    ) : AppInfoDataSource {
-        override val apps: Flow<List<AppInfo>> =
-            callbackFlow {
-                // Refresh requests are processed one at a time, on a single worker, so that
-                // currentApps() results are always sent in the order they were requested.
-                val refreshRequests = Channel<Unit>(Channel.CONFLATED)
-                launch(Dispatchers.IO) {
-                    refreshRequests.consumeEach { _ ->
-                        val result = trySend(currentApps())
-                        if (result.isFailure) {
-                            Timber.e("Failed to send value")
-                        }
+@Inject
+constructor(@ApplicationContext private val context: Context) :
+    AppInfoDataSource {
+    override val apps: Flow<List<AppInfo>> =
+        callbackFlow {
+            // Refresh requests are processed one at a time, on a single worker, so that
+            // currentApps() results are always sent in the order they were requested.
+            val refreshRequests = Channel<Unit>(Channel.CONFLATED)
+            launch(Dispatchers.IO) {
+                refreshRequests.consumeEach { _ ->
+                    val result = trySend(currentApps())
+                    if (result.isFailure) {
+                        Timber.e("Failed to send value")
                     }
-                }
-
-                // Request the initial value
-                refreshRequests.trySend(Unit)
-
-                // Listen for changes
-                val receiver =
-                    object : BroadcastReceiver() {
-                        override fun onReceive(
-                            context: Context,
-                            intent: Intent,
-                        ) {
-                            refreshRequests.trySend(Unit)
-                        }
-                    }
-
-                // Register the receiver
-                val filter =
-                    IntentFilter().apply {
-                        addAction(Intent.ACTION_PACKAGE_ADDED)
-                        addAction(Intent.ACTION_PACKAGE_REMOVED)
-                        addAction(Intent.ACTION_PACKAGE_CHANGED)
-                        addDataScheme("package")
-                    }
-                ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-                awaitClose {
-                    context.unregisterReceiver(receiver)
-                    refreshRequests.close()
                 }
             }
 
-        override fun currentApps(): List<AppInfo> {
-            Timber.d("Getting apps from device")
+            // Request the initial value
+            refreshRequests.trySend(Unit)
 
-            val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-            return context.packageManager
-                .queryIntentActivities(launcherIntent, 0)
-                .distinctBy { it.activityInfo.packageName }
-                .map { resolveInfo ->
-                    val applicationInfo = resolveInfo.activityInfo.applicationInfo
-
-                    Timber.d("Getting app: ${applicationInfo.packageName}")
-
-                    AppInfo(
-                        applicationInfo.packageName,
-                        applicationInfo.loadLabel(context.packageManager).toString(),
-                        applicationInfo.loadIcon(context.packageManager),
-                    )
+            // Listen for changes
+            val receiver =
+                object : BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) {
+                        refreshRequests.trySend(Unit)
+                    }
                 }
+
+            // Register the receiver
+            val filter =
+                IntentFilter().apply {
+                    addAction(Intent.ACTION_PACKAGE_ADDED)
+                    addAction(Intent.ACTION_PACKAGE_REMOVED)
+                    addAction(Intent.ACTION_PACKAGE_CHANGED)
+                    addDataScheme("package")
+                }
+            ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+            awaitClose {
+                context.unregisterReceiver(receiver)
+                refreshRequests.close()
+            }
         }
+
+    override fun currentApps(): List<AppInfo> {
+        Timber.d("Getting apps from device")
+
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        return context.packageManager
+            .queryIntentActivities(launcherIntent, 0)
+            .distinctBy { it.activityInfo.packageName }
+            .map { resolveInfo ->
+                val applicationInfo = resolveInfo.activityInfo.applicationInfo
+
+                Timber.d("Getting app: ${applicationInfo.packageName}")
+
+                AppInfo(
+                    applicationInfo.packageName,
+                    applicationInfo.loadLabel(context.packageManager).toString(),
+                    applicationInfo.loadIcon(context.packageManager)
+                )
+            }
     }
+}

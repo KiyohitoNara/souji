@@ -40,6 +40,8 @@ import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertTrue
@@ -51,8 +53,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -87,7 +87,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel,
+                appInfoViewModel = appInfoViewModel
             )
         }
     }
@@ -144,16 +144,13 @@ class MainActivityTest {
             .edit()
             .putStringSet(
                 AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES,
-                setOf("io.github.kiyohitonara.souji"),
+                setOf("io.github.kiyohitonara.souji")
             ).commit()
 
         val countDownLatch = CountDownLatch(1)
         val receiver =
             object : BroadcastReceiver() {
-                override fun onReceive(
-                    context: Context,
-                    intent: Intent,
-                ) {
+                override fun onReceive(context: Context, intent: Intent) {
                     if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
                         intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
                         "io.github.kiyohitonara.souji"

@@ -50,79 +50,74 @@ class AppInfoRepositoryTest {
     }
 
     @Test
-    fun getAppsFlow_returnsAppInfoList() =
-        runBlocking {
-            val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-            whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
+    fun getAppsFlow_returnsAppInfoList() = runBlocking {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
 
-            val prefsApps = listOf(AppInfo("com.example.app1", true))
-            whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(prefsApps))
+        val prefsApps = listOf(AppInfo("com.example.app1", true))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(prefsApps))
 
-            val result = repository.getAppsFlow().first()
+        val result = repository.getAppsFlow().first()
 
-            assertEquals(2, result.size)
-            assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
-            assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
-        }
-
-    @Test
-    fun getAppsFlow_returnsAppInfoListWhenNoSharedPreferencesApps() =
-        runBlocking {
-            val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
-            whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
-
-            whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
-
-            val result = repository.getAppsFlow().first()
-
-            assertEquals(2, result.size)
-            assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
-            assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
-        }
+        assertEquals(2, result.size)
+        assertEquals(true, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+    }
 
     @Test
-    fun getAppsFlow_returnsSortedByLabel() =
-        runBlocking {
-            val deviceApps =
-                listOf(
-                    AppInfo("com.example.app1", "Banana", null, false),
-                    AppInfo("com.example.app2", "Apple", null, false),
-                    AppInfo("com.example.app3", "Cherry", null, false),
-                )
-            whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
-            whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
+    fun getAppsFlow_returnsAppInfoListWhenNoSharedPreferencesApps() = runBlocking {
+        val deviceApps = listOf(AppInfo("com.example.app1", false), AppInfo("com.example.app2", false))
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
 
-            val result = repository.getAppsFlow().first()
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            assertEquals("Apple", result[0].label)
-            assertEquals("Banana", result[1].label)
-            assertEquals("Cherry", result[2].label)
-        }
+        val result = repository.getAppsFlow().first()
+
+        assertEquals(2, result.size)
+        assertEquals(false, result.find { it.packageName == "com.example.app1" }?.isEnabled)
+        assertEquals(false, result.find { it.packageName == "com.example.app2" }?.isEnabled)
+    }
 
     @Test
-    fun getAppsFlow_sortsNullLabelLast() =
-        runBlocking {
-            val deviceApps =
-                listOf(
-                    AppInfo("com.example.app1", null, null, false),
-                    AppInfo("com.example.app2", "Apple", null, false),
-                )
-            whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
-            whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
+    fun getAppsFlow_returnsSortedByLabel() = runBlocking {
+        val deviceApps =
+            listOf(
+                AppInfo("com.example.app1", "Banana", null, false),
+                AppInfo("com.example.app2", "Apple", null, false),
+                AppInfo("com.example.app3", "Cherry", null, false)
+            )
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            val result = repository.getAppsFlow().first()
+        val result = repository.getAppsFlow().first()
 
-            assertEquals("Apple", result[0].label)
-            assertEquals(null, result[1].label)
-        }
+        assertEquals("Apple", result[0].label)
+        assertEquals("Banana", result[1].label)
+        assertEquals("Cherry", result[2].label)
+    }
 
     @Test
-    fun upsertApp_delegatesToSharedPreferences() =
-        runBlocking {
-            val appInfo = AppInfo("com.example.app1", true)
+    fun getAppsFlow_sortsNullLabelLast() = runBlocking {
+        val deviceApps =
+            listOf(
+                AppInfo("com.example.app1", null, null, false),
+                AppInfo("com.example.app2", "Apple", null, false)
+            )
+        whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
+        whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
 
-            repository.upsertApp(appInfo)
+        val result = repository.getAppsFlow().first()
 
-            verify(sharedPreferencesDataSource).upsertApp(appInfo)
-        }
+        assertEquals("Apple", result[0].label)
+        assertEquals(null, result[1].label)
+    }
+
+    @Test
+    fun upsertApp_delegatesToSharedPreferences() = runBlocking {
+        val appInfo = AppInfo("com.example.app1", true)
+
+        repository.upsertApp(appInfo)
+
+        verify(sharedPreferencesDataSource).upsertApp(appInfo)
+    }
 }

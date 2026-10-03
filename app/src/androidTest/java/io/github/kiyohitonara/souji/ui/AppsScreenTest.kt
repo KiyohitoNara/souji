@@ -65,7 +65,7 @@ class AppsScreenTest {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "App 1", null, true),
-                AppInfo("com.example.app2", "App 2", null, false),
+                AppInfo("com.example.app2", "App 2", null, false)
             )
         val appInfoViewModel = createViewModel(apps)
 
@@ -79,25 +79,24 @@ class AppsScreenTest {
     }
 
     @Test
-    fun appListItem_switchToggles() =
-        runBlocking {
-            val app = AppInfo("com.example.app", "App", null, false)
-            val appInfoViewModel = createViewModel(listOf(app))
+    fun appListItem_switchToggles() = runBlocking {
+        val app = AppInfo("com.example.app", "App", null, false)
+        val appInfoViewModel = createViewModel(listOf(app))
 
-            composeTestRule.setContent {
-                AppsScreen(appInfoViewModel = appInfoViewModel)
-            }
-
-            composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
-            verify(appInfoRepository, timeout(1000)).upsertApp(app.copy(isEnabled = true))
+        composeTestRule.setContent {
+            AppsScreen(appInfoViewModel = appInfoViewModel)
         }
+
+        composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
+        verify(appInfoRepository, timeout(1000)).upsertApp(app.copy(isEnabled = true))
+    }
 
     @Test
     fun appsScreen_filtersAppsBySearchQuery() {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false),
+                AppInfo("com.example.app2", "Apple", null, false)
             )
         val appInfoViewModel = createViewModel(apps)
 
@@ -114,7 +113,7 @@ class AppsScreenTest {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false),
+                AppInfo("com.example.app2", "Apple", null, false)
             )
         val appInfoViewModel = createViewModel(apps)
 

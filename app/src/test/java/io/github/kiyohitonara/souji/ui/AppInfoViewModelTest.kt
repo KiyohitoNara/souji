@@ -70,25 +70,23 @@ class AppInfoViewModelTest {
     }
 
     @Test
-    fun apps_emitsAppsFromRepository() =
-        runTest(testDispatcher) {
-            val apps = listOf(AppInfo("com.example.app", false))
-            whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
-            viewModel = AppInfoViewModel(repository, testDispatcher)
+    fun apps_emitsAppsFromRepository() = runTest(testDispatcher) {
+        val apps = listOf(AppInfo("com.example.app", false))
+        whenever(repository.getAppsFlow()).thenReturn(flowOf(apps))
+        viewModel = AppInfoViewModel(repository, testDispatcher)
 
-            val result = viewModel.apps.first { it.isNotEmpty() }
+        val result = viewModel.apps.first { it.isNotEmpty() }
 
-            assertEquals(apps, result)
-        }
+        assertEquals(apps, result)
+    }
 
     @Test
-    fun upsertApp_delegatesToRepository() =
-        runTest(testDispatcher) {
-            val app = AppInfo("com.example.app", true)
-            viewModel.upsertApp(app)
+    fun upsertApp_delegatesToRepository() = runTest(testDispatcher) {
+        val app = AppInfo("com.example.app", true)
+        viewModel.upsertApp(app)
 
-            advanceUntilIdle()
+        advanceUntilIdle()
 
-            verify(repository).upsertApp(app)
-        }
+        verify(repository).upsertApp(app)
+    }
 }

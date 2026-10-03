@@ -33,6 +33,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.model.AppInfo
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -44,9 +47,6 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
@@ -64,46 +64,42 @@ class SoujiActivityTest {
     }
 
     @Test
-    fun onCreate_startsService() =
-        runBlocking {
-            val testAppPackageName = "io.github.kiyohitonara.souji"
+    fun onCreate_startsService() = runBlocking {
+        val testAppPackageName = "io.github.kiyohitonara.souji"
 
-            val countDownLatch = CountDownLatch(1)
-            val receiver =
-                object : BroadcastReceiver() {
-                    override fun onReceive(
-                        context: Context,
-                        intent: Intent,
+        val countDownLatch = CountDownLatch(1)
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                        testAppPackageName
                     ) {
-                        if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
-                            testAppPackageName
-                        ) {
-                            countDownLatch.countDown()
-                        }
+                        countDownLatch.countDown()
                     }
                 }
-
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
-            application.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
-
-            try {
-                repository.upsertApp(AppInfo(testAppPackageName, true))
-
-                Robolectric.buildActivity(SoujiActivity::class.java).create()
-
-                val startedServiceIntent = shadowOf(application).peekNextStartedService()
-                assertNotNull(startedServiceIntent)
-
-                Robolectric
-                    .buildService(SoujiService::class.java, startedServiceIntent)
-                    .create()
-                    .startCommand(0, 0)
-
-                assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
-            } finally {
-                application.unregisterReceiver(receiver)
             }
+
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
+        application.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+        try {
+            repository.upsertApp(AppInfo(testAppPackageName, true))
+
+            Robolectric.buildActivity(SoujiActivity::class.java).create()
+
+            val startedServiceIntent = shadowOf(application).peekNextStartedService()
+            assertNotNull(startedServiceIntent)
+
+            Robolectric
+                .buildService(SoujiService::class.java, startedServiceIntent)
+                .create()
+                .startCommand(0, 0)
+
+            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+        } finally {
+            application.unregisterReceiver(receiver)
         }
+    }
 }

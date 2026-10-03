@@ -23,47 +23,43 @@
 package io.github.kiyohitonara.souji.data
 
 import io.github.kiyohitonara.souji.model.AppInfo
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import timber.log.Timber
-import javax.inject.Inject
 
 open class AppInfoRepository
-    @Inject
-    constructor(
-        private val deviceDataSource: AppInfoDeviceDataSource,
-        private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource,
-    ) {
-        private fun mergeApps(
-            deviceApps: List<AppInfo>,
-            prefsApps: List<AppInfo>,
-        ): List<AppInfo> =
-            deviceApps
-                .map { deviceApp ->
-                    prefsApps
-                        .find { it.packageName == deviceApp.packageName }
-                        ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
-                        ?: deviceApp
-                }.sortedWith(compareBy(nullsLast()) { it.label })
+@Inject
+constructor(
+    private val deviceDataSource: AppInfoDeviceDataSource,
+    private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
+) {
+    private fun mergeApps(deviceApps: List<AppInfo>, prefsApps: List<AppInfo>): List<AppInfo> = deviceApps
+        .map { deviceApp ->
+            prefsApps
+                .find { it.packageName == deviceApp.packageName }
+                ?.let { deviceApp.copy(isEnabled = it.isEnabled) }
+                ?: deviceApp
+        }.sortedWith(compareBy(nullsLast()) { it.label })
 
-        /**
-         * Returns a flow of the list of app information, merging the apps installed on the device
-         * with their enabled state stored in shared preferences.
-         */
-        open fun getAppsFlow(): Flow<List<AppInfo>> {
-            Timber.d("Getting apps flow")
+    /**
+     * Returns a flow of the list of app information, merging the apps installed on the device
+     * with their enabled state stored in shared preferences.
+     */
+    open fun getAppsFlow(): Flow<List<AppInfo>> {
+        Timber.d("Getting apps flow")
 
-            return combine(deviceDataSource.apps, sharedPreferencesDataSource.apps) { deviceApps, prefsApps ->
-                mergeApps(deviceApps, prefsApps)
-            }
-        }
-
-        /**
-         * Upserts the given app information.
-         *
-         * @param appInfo The app information to upsert.
-         */
-        open suspend fun upsertApp(appInfo: AppInfo) {
-            sharedPreferencesDataSource.upsertApp(appInfo)
+        return combine(deviceDataSource.apps, sharedPreferencesDataSource.apps) { deviceApps, prefsApps ->
+            mergeApps(deviceApps, prefsApps)
         }
     }
+
+    /**
+     * Upserts the given app information.
+     *
+     * @param appInfo The app information to upsert.
+     */
+    open suspend fun upsertApp(appInfo: AppInfo) {
+        sharedPreferencesDataSource.upsertApp(appInfo)
+    }
+}

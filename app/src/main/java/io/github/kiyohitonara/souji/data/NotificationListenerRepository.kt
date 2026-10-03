@@ -25,20 +25,18 @@ package io.github.kiyohitonara.souji.data
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 open class NotificationListenerRepository
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
-    ) {
-        /**
-         * Returns whether this app is enabled as a notification listener.
-         */
-        open fun isNotificationListenerEnabled(): Boolean {
-            Timber.d("Checking notification listener")
+@Inject
+constructor(@ApplicationContext private val context: Context) {
+    /**
+     * Returns whether this app is enabled as a notification listener.
+     */
+    open fun isNotificationListenerEnabled(): Boolean {
+        Timber.d("Checking notification listener")
 
-            return NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
-        }
+        return NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
     }
+}

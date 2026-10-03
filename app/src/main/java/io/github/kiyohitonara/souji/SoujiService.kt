@@ -27,8 +27,8 @@ import android.content.Intent
 import android.service.notification.NotificationListenerService
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 @AndroidEntryPoint
 open class SoujiService : NotificationListenerService() {
@@ -50,11 +50,7 @@ open class SoujiService : NotificationListenerService() {
         }
     }
 
-    override fun onStartCommand(
-        intent: Intent?,
-        flags: Int,
-        startId: Int,
-    ): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Service started")
 
         val packageNames = dataSource.currentApps().map { it.packageName }

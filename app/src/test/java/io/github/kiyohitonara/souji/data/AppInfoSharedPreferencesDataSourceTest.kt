@@ -89,78 +89,72 @@ class AppInfoSharedPreferencesDataSourceTest {
     }
 
     @Test
-    fun apps_emitsEmptyListInitially() =
-        runBlocking {
-            val apps = dataSource.apps.first()
+    fun apps_emitsEmptyListInitially() = runBlocking {
+        val apps = dataSource.apps.first()
 
-            assertTrue(apps.isEmpty())
-        }
-
-    @Test
-    fun apps_emitsStoredAppsOnSubscribe() =
-        runBlocking {
-            storePackageNames("com.example.app1", "com.example.app2")
-
-            val apps = dataSource.apps.first()
-
-            assertEquals(2, apps.size)
-            assertTrue(apps.any { it.packageName == "com.example.app1" })
-            assertTrue(apps.any { it.packageName == "com.example.app2" })
-        }
+        assertTrue(apps.isEmpty())
+    }
 
     @Test
-    fun apps_emitsUpdatedListAfterUpsertApp() =
-        runBlocking {
-            val results = mutableListOf<List<AppInfo>>()
-            val initialEmission = CompletableDeferred<Unit>()
+    fun apps_emitsStoredAppsOnSubscribe() = runBlocking {
+        storePackageNames("com.example.app1", "com.example.app2")
 
-            val job =
-                launch(Dispatchers.IO) {
-                    dataSource.apps.take(2).collect {
-                        results.add(it)
-                        initialEmission.complete(Unit)
-                    }
+        val apps = dataSource.apps.first()
+
+        assertEquals(2, apps.size)
+        assertTrue(apps.any { it.packageName == "com.example.app1" })
+        assertTrue(apps.any { it.packageName == "com.example.app2" })
+    }
+
+    @Test
+    fun apps_emitsUpdatedListAfterUpsertApp() = runBlocking {
+        val results = mutableListOf<List<AppInfo>>()
+        val initialEmission = CompletableDeferred<Unit>()
+
+        val job =
+            launch(Dispatchers.IO) {
+                dataSource.apps.take(2).collect {
+                    results.add(it)
+                    initialEmission.complete(Unit)
                 }
+            }
 
-            initialEmission.await()
-            dataSource.upsertApp(AppInfo("com.example.app1", true))
-            job.join()
+        initialEmission.await()
+        dataSource.upsertApp(AppInfo("com.example.app1", true))
+        job.join()
 
-            assertEquals(2, results.size)
-            assertTrue(results[0].isEmpty())
-            assertTrue(results[1].any { it.packageName == "com.example.app1" })
-        }
-
-    @Test
-    fun upsertApp_addsEnabledApp() =
-        runBlocking {
-            dataSource.upsertApp(AppInfo("com.example.app1", true))
-
-            val apps = dataSource.currentApps()
-
-            assertEquals(1, apps.size)
-            assertTrue(apps.any { it.packageName == "com.example.app1" })
-        }
+        assertEquals(2, results.size)
+        assertTrue(results[0].isEmpty())
+        assertTrue(results[1].any { it.packageName == "com.example.app1" })
+    }
 
     @Test
-    fun upsertApp_removesDisabledApp() =
-        runBlocking {
-            storePackageNames("com.example.app1")
+    fun upsertApp_addsEnabledApp() = runBlocking {
+        dataSource.upsertApp(AppInfo("com.example.app1", true))
 
-            dataSource.upsertApp(AppInfo("com.example.app1", false))
+        val apps = dataSource.currentApps()
 
-            assertTrue(dataSource.currentApps().isEmpty())
-        }
+        assertEquals(1, apps.size)
+        assertTrue(apps.any { it.packageName == "com.example.app1" })
+    }
 
     @Test
-    fun upsertApp_doesNotAffectOtherApps() =
-        runBlocking {
-            storePackageNames("com.example.app1", "com.example.app2")
+    fun upsertApp_removesDisabledApp() = runBlocking {
+        storePackageNames("com.example.app1")
 
-            dataSource.upsertApp(AppInfo("com.example.app1", false))
+        dataSource.upsertApp(AppInfo("com.example.app1", false))
 
-            val apps = dataSource.currentApps()
-            assertFalse(apps.any { it.packageName == "com.example.app1" })
-            assertTrue(apps.any { it.packageName == "com.example.app2" })
-        }
+        assertTrue(dataSource.currentApps().isEmpty())
+    }
+
+    @Test
+    fun upsertApp_doesNotAffectOtherApps() = runBlocking {
+        storePackageNames("com.example.app1", "com.example.app2")
+
+        dataSource.upsertApp(AppInfo("com.example.app1", false))
+
+        val apps = dataSource.currentApps()
+        assertFalse(apps.any { it.packageName == "com.example.app1" })
+        assertTrue(apps.any { it.packageName == "com.example.app2" })
+    }
 }

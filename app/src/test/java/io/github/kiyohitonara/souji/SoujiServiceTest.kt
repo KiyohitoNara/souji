@@ -32,6 +32,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -41,8 +43,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
@@ -83,70 +83,62 @@ class SoujiServiceTest {
     }
 
     @Test
-    fun onStartCommand_cancelsActiveNotifications() =
-        runBlocking {
-            storeTestAppPackageName()
+    fun onStartCommand_cancelsActiveNotifications() = runBlocking {
+        storeTestAppPackageName()
 
-            val countDownLatch = CountDownLatch(1)
-            val receiver =
-                object : BroadcastReceiver() {
-                    override fun onReceive(
-                        context: Context,
-                        intent: Intent,
+        val countDownLatch = CountDownLatch(1)
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                        TEST_APP_PACKAGE_NAME
                     ) {
-                        if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
-                            TEST_APP_PACKAGE_NAME
-                        ) {
-                            countDownLatch.countDown()
-                        }
+                        countDownLatch.countDown()
                     }
                 }
-
-            val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
-            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
-
-            try {
-                startSoujiService()
-                assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
-            } finally {
-                context.unregisterReceiver(receiver)
-                clearTestAppPackageName()
             }
+
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
+        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+        try {
+            startSoujiService()
+            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+        } finally {
+            context.unregisterReceiver(receiver)
+            clearTestAppPackageName()
         }
+    }
 
     @Test
-    fun onStartCommand_broadcastsCancelledCount() =
-        runBlocking {
-            storeTestAppPackageName()
+    fun onStartCommand_broadcastsCancelledCount() = runBlocking {
+        storeTestAppPackageName()
 
-            val countDownLatch = CountDownLatch(1)
-            var cancelledCount = -1
-            val receiver =
-                object : BroadcastReceiver() {
-                    override fun onReceive(
-                        context: Context,
-                        intent: Intent,
-                    ) {
-                        if (intent.action == SoujiService.ACTION_NOTIFICATIONS_CANCELLED) {
-                            cancelledCount = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, -1)
-                            countDownLatch.countDown()
-                        }
+        val countDownLatch = CountDownLatch(1)
+        var cancelledCount = -1
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    if (intent.action == SoujiService.ACTION_NOTIFICATIONS_CANCELLED) {
+                        cancelledCount = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, -1)
+                        countDownLatch.countDown()
                     }
                 }
-
-            val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
-            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
-
-            try {
-                startSoujiService()
-                assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
-                assertTrue(cancelledCount >= 0)
-            } finally {
-                context.unregisterReceiver(receiver)
-                clearTestAppPackageName()
             }
+
+        val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
+        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
+
+        try {
+            startSoujiService()
+            assertTrue(countDownLatch.await(10, TimeUnit.SECONDS))
+            assertTrue(cancelledCount >= 0)
+        } finally {
+            context.unregisterReceiver(receiver)
+            clearTestAppPackageName()
         }
+    }
 
     private companion object {
         const val TEST_APP_PACKAGE_NAME = "io.github.kiyohitonara.souji"

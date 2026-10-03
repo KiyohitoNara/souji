@@ -28,40 +28,40 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.di.IoDispatcher
 import io.github.kiyohitonara.souji.model.AppInfo
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 open class AppInfoViewModel
-    @Inject
-    constructor(
-        private val repository: AppInfoRepository,
-        @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    ) : ViewModel() {
-        /**
-         * A state flow of the list of app information.
-         */
-        val apps: StateFlow<List<AppInfo>> =
-            repository
-                .getAppsFlow()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5000),
-                    initialValue = emptyList(),
-                )
+@Inject
+constructor(
+    private val repository: AppInfoRepository,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : ViewModel() {
+    /**
+     * A state flow of the list of app information.
+     */
+    val apps: StateFlow<List<AppInfo>> =
+        repository
+            .getAppsFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
-        /**
-         * Upserts the given app information.
-         *
-         * @param appInfo The app information to upsert.
-         */
-        open fun upsertApp(appInfo: AppInfo) {
-            viewModelScope.launch(ioDispatcher) {
-                repository.upsertApp(appInfo)
-            }
+    /**
+     * Upserts the given app information.
+     *
+     * @param appInfo The app information to upsert.
+     */
+    open fun upsertApp(appInfo: AppInfo) {
+        viewModelScope.launch(ioDispatcher) {
+            repository.upsertApp(appInfo)
         }
     }
+}

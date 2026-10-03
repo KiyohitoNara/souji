@@ -51,7 +51,7 @@ import timber.log.Timber
 fun AppsScreen(
     appInfoViewModel: AppInfoViewModel,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    searchQuery: String = "",
+    searchQuery: String = ""
 ) {
     val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
 
@@ -63,7 +63,7 @@ fun AppsScreen(
             appInfoViewModel.upsertApp(app.copy(isEnabled = isEnabled))
         },
         contentPadding = contentPadding,
-        searchQuery = searchQuery,
+        searchQuery = searchQuery
     )
 }
 
@@ -73,7 +73,7 @@ fun AppList(
     apps: List<AppInfo>,
     onCheckedChange: ((AppInfo, Boolean) -> Unit)?,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    searchQuery: String = "",
+    searchQuery: String = ""
 ) {
     val filteredApps =
         if (searchQuery.isBlank()) {
@@ -87,7 +87,7 @@ fun AppList(
 
     LazyColumn(
         modifier = Modifier.testTag("AppList"),
-        contentPadding = contentPadding,
+        contentPadding = contentPadding
     ) {
         items(filteredApps) { app ->
             AppListItem(app, onCheckedChange)
@@ -97,16 +97,13 @@ fun AppList(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppListItem(
-    app: AppInfo,
-    onCheckedChange: ((AppInfo, Boolean) -> Unit)?,
-) {
+fun AppListItem(app: AppInfo, onCheckedChange: ((AppInfo, Boolean) -> Unit)?) {
     ListItem(
         headlineContent = {
             Text(
                 text = app.label ?: stringResource(id = R.string.unknown_app),
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
+                maxLines = 1
             )
         },
         modifier = Modifier.testTag("AppListItem_${app.packageName}"),
@@ -114,23 +111,23 @@ fun AppListItem(
             Text(
                 text = app.packageName,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
+                maxLines = 1
             )
         },
         leadingContent = {
             Image(
                 painter = rememberDrawablePainter(app.icon),
                 contentDescription = app.label,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(40.dp)
             )
         },
         trailingContent = {
             Switch(
                 checked = app.isEnabled,
                 onCheckedChange = { onCheckedChange?.invoke(app, it) },
-                modifier = Modifier.testTag("AppListItemSwitch_${app.packageName}"),
+                modifier = Modifier.testTag("AppListItemSwitch_${app.packageName}")
             )
-        },
+        }
     )
 }
 
@@ -140,11 +137,11 @@ private fun AppsScreenPreview() {
     SoujiTheme {
         AppList(
             apps =
-                listOf(
-                    AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
-                    AppInfo("com.example.app", "Example", null, false),
-                ),
-            onCheckedChange = null,
+            listOf(
+                AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
+                AppInfo("com.example.app", "Example", null, false)
+            ),
+            onCheckedChange = null
         )
     }
 }
