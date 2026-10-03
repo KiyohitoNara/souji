@@ -76,7 +76,8 @@ class SoujiActivityTest {
                         intent: Intent,
                     ) {
                         if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == testAppPackageName
+                            intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                            testAppPackageName
                         ) {
                             countDownLatch.countDown()
                         }

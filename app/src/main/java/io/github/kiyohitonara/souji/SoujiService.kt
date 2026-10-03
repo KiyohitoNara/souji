@@ -38,8 +38,10 @@ open class SoujiService : NotificationListenerService() {
     companion object {
         const val ACTION_NOTIFICATION_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATION_CANCELLED"
         const val ACTION_NOTIFICATIONS_CANCELLED = "io.github.kiyohitonara.souji.NOTIFICATIONS_CANCELLED"
-        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAMES"
-        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
+        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES =
+            "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAMES"
+        const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME =
+            "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
         const val EXTRA_CANCELLED_NOTIFICATION_COUNT = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_COUNT"
 
         /** Starts the service to cancel notifications for enabled apps. */

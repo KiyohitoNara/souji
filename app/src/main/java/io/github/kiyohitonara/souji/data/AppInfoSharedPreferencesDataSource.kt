@@ -104,5 +104,6 @@ open class AppInfoSharedPreferencesDataSource
             }
         }
 
-        private fun getStoredPackageNames(): Set<String> = sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
+        private fun getStoredPackageNames(): Set<String> =
+            sharedPreferences.getStringSet(KEY_APP_PACKAGE_NAMES, emptySet()) ?: emptySet()
     }

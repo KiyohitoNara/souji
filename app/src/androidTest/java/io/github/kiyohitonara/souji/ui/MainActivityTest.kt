@@ -142,8 +142,10 @@ class MainActivityTest {
         PreferenceManager
             .getDefaultSharedPreferences(context)
             .edit()
-            .putStringSet(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES, setOf("io.github.kiyohitonara.souji"))
-            .commit()
+            .putStringSet(
+                AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES,
+                setOf("io.github.kiyohitonara.souji"),
+            ).commit()
 
         val countDownLatch = CountDownLatch(1)
         val receiver =
@@ -153,7 +155,8 @@ class MainActivityTest {
                     intent: Intent,
                 ) {
                     if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) == "io.github.kiyohitonara.souji"
+                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                        "io.github.kiyohitonara.souji"
                     ) {
                         countDownLatch.countDown()
                     }
