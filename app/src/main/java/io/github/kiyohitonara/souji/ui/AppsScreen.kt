@@ -71,15 +71,14 @@ fun AppList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     searchQuery: String = "",
 ) {
-    val filteredApps =
-        if (searchQuery.isBlank()) {
-            apps
-        } else {
-            apps.filter { app ->
-                app.label?.contains(searchQuery, ignoreCase = true) == true ||
+    val filteredApps = if (searchQuery.isBlank()) {
+        apps
+    } else {
+        apps.filter { app ->
+            app.label?.contains(searchQuery, ignoreCase = true) == true ||
                     app.packageName.contains(searchQuery, ignoreCase = true)
-            }
         }
+    }
 
     LazyColumn(
         modifier = Modifier.testTag("AppList"),
@@ -133,10 +132,10 @@ private fun AppsScreenPreview() {
     SoujiTheme {
         AppList(
             apps =
-            listOf(
-                AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
-                AppInfo("com.example.app", "Example", null, false),
-            ),
+                listOf(
+                    AppInfo("io.github.kiyohitonara.souji", "Souji", null, true),
+                    AppInfo("com.example.app", "Example", null, false),
+                ),
             onCheckedChange = null,
         )
     }

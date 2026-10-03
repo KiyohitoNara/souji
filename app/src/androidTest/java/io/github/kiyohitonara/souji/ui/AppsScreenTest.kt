@@ -57,16 +57,16 @@ class AppsScreenTest {
 
     private fun createViewModel(apps: List<AppInfo>): AppInfoViewModel {
         whenever(appInfoRepository.getAppsFlow()).thenReturn(flowOf(apps))
+
         return AppInfoViewModel(appInfoRepository, Dispatchers.IO)
     }
 
     @Test
     fun appsScreen_displaysAppList() {
-        val apps =
-            listOf(
-                AppInfo("com.example.app1", "App 1", null, true),
-                AppInfo("com.example.app2", "App 2", null, false),
-            )
+        val apps = listOf(
+            AppInfo("com.example.app1", "App 1", null, true),
+            AppInfo("com.example.app2", "App 2", null, false),
+        )
         val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
@@ -93,11 +93,10 @@ class AppsScreenTest {
 
     @Test
     fun appsScreen_filtersAppsBySearchQuery() {
-        val apps =
-            listOf(
-                AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false),
-            )
+        val apps = listOf(
+            AppInfo("com.example.app1", "Banana", null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+        )
         val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
@@ -110,11 +109,10 @@ class AppsScreenTest {
 
     @Test
     fun appsScreen_hidesNonMatchingApps() {
-        val apps =
-            listOf(
-                AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false),
-            )
+        val apps = listOf(
+            AppInfo("com.example.app1", "Banana", null, false),
+            AppInfo("com.example.app2", "Apple", null, false),
+        )
         val appInfoViewModel = createViewModel(apps)
 
         composeTestRule.setContent {
