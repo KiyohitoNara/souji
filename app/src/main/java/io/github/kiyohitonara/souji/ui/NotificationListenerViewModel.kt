@@ -32,8 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationListenerViewModel
 @Inject
-constructor(private val repository: NotificationListenerRepository) :
-    ViewModel() {
+constructor(private val repository: NotificationListenerRepository) : ViewModel() {
     private val _isEnabled = MutableStateFlow(false)
 
     /**

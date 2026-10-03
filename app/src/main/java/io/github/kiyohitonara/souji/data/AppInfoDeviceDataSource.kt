@@ -39,10 +39,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-open class AppInfoDeviceDataSource
-@Inject
-constructor(@ApplicationContext private val context: Context) :
-    AppInfoDataSource {
+open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
     override val apps: Flow<List<AppInfo>> =
         callbackFlow {
             // Refresh requests are processed one at a time, on a single worker, so that
@@ -61,12 +58,11 @@ constructor(@ApplicationContext private val context: Context) :
             refreshRequests.trySend(Unit)
 
             // Listen for changes
-            val receiver =
-                object : BroadcastReceiver() {
-                    override fun onReceive(context: Context, intent: Intent) {
-                        refreshRequests.trySend(Unit)
-                    }
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    refreshRequests.trySend(Unit)
                 }
+            }
 
             // Register the receiver
             val filter =

@@ -48,11 +48,7 @@ import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppsScreen(
-    appInfoViewModel: AppInfoViewModel,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    searchQuery: String = ""
-) {
+fun AppsScreen(appInfoViewModel: AppInfoViewModel, contentPadding: PaddingValues = PaddingValues(0.dp), searchQuery: String = "") {
     val apps by appInfoViewModel.apps.collectAsStateWithLifecycle()
 
     AppList(
