@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
 
 enum class SoujiScreen(@StringRes val title: Int) {
     Apps(title = R.string.app_name),
-    About(title = R.string.about),
+    About(title = R.string.app_bar_title_about),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,9 +131,9 @@ fun SoujiApp(
 
                 val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
                 val message = if (count == 0) {
-                    resources.getString(R.string.notifications_cleaned_none)
+                    resources.getString(R.string.apps_notifications_cleaned_none)
                 } else {
-                    resources.getQuantityString(R.plurals.notifications_cleaned, count, count)
+                    resources.getQuantityString(R.plurals.apps_notifications_cleaned, count, count)
                 }
 
                 coroutineScope.launch {
@@ -226,7 +226,7 @@ fun SoujiAppBar(
                 TextField(
                     value = searchQuery,
                     onValueChange = onSearchQueryChange,
-                    placeholder = { Text(stringResource(R.string.search_apps)) },
+                    placeholder = { Text(stringResource(R.string.app_bar_search_placeholder)) },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -257,7 +257,7 @@ fun SoujiAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(R.string.close_search),
+                        contentDescription = stringResource(R.string.app_bar_cd_close_search),
                     )
                 }
             } else if (canNavigateBack) {
@@ -267,7 +267,7 @@ fun SoujiAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back),
+                        contentDescription = stringResource(R.string.app_bar_cd_back),
                     )
                 }
             }
@@ -283,7 +283,7 @@ fun SoujiAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(R.string.search),
+                        contentDescription = stringResource(R.string.app_bar_cd_search),
                     )
                 }
                 IconButton(
@@ -296,7 +296,7 @@ fun SoujiAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.more),
+                        contentDescription = stringResource(R.string.app_bar_cd_more),
                     )
                 }
                 DropdownMenu(
@@ -304,7 +304,7 @@ fun SoujiAppBar(
                     onDismissRequest = { expanded = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.about)) },
+                        text = { Text(stringResource(R.string.app_bar_title_about)) },
                         onClick = {
                             Timber.i("SoujiAppBarAboutMenuItem clicked")
 
@@ -332,7 +332,7 @@ fun SoujiFloatingActionButton(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.CleaningServices,
-            contentDescription = stringResource(R.string.clean),
+            contentDescription = stringResource(R.string.apps_cd_clean),
         )
     }
 }

@@ -63,12 +63,12 @@ fun NotificationAccessDialog(notificationListenerViewModel: NotificationListener
                     },
                     modifier = Modifier.testTag("NotificationAccessDialogConfirmButton"),
                 ) {
-                    Text(stringResource(R.string.setting))
+                    Text(stringResource(R.string.notification_access_dialog_confirm))
                 }
             },
             modifier = Modifier.testTag("NotificationAccessDialog"),
-            title = { Text(stringResource(R.string.notification_access_required)) },
-            text = { Text(stringResource(R.string.notification_access_required_explanation)) },
+            title = { Text(stringResource(R.string.notification_access_dialog_title)) },
+            text = { Text(stringResource(R.string.notification_access_dialog_message)) },
         )
     }
 }

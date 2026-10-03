@@ -96,7 +96,7 @@ fun AppListItem(app: AppInfo, onCheckedChange: ((AppInfo, Boolean) -> Unit)?) {
     ListItem(
         headlineContent = {
             Text(
-                text = app.label ?: stringResource(id = R.string.unknown_app),
+                text = app.label ?: stringResource(id = R.string.apps_unknown_app_label),
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
