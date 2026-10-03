@@ -123,7 +123,11 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
             Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .setPackage(packageName)
-        val resolveInfo = context.packageManager.resolveActivity(launcherIntent, 0) ?: return null
+        val resolveInfo =
+            context.packageManager
+                .queryIntentActivities(launcherIntent, 0)
+                .firstOrNull { it.activityInfo.packageName == packageName }
+                ?: return null
         val applicationInfo = resolveInfo.activityInfo.applicationInfo
 
         return AppInfo(
