@@ -28,9 +28,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import javax.inject.Inject
 
-open class NotificationListenerRepository
-@Inject
-constructor(@ApplicationContext private val context: Context) {
+open class NotificationListenerRepository @Inject constructor(@ApplicationContext private val context: Context) {
     /**
      * Returns whether this app is enabled as a notification listener.
      */
