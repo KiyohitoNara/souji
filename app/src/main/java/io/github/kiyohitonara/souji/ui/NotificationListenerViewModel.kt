@@ -30,9 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class NotificationListenerViewModel
-@Inject
-constructor(private val repository: NotificationListenerRepository) : ViewModel() {
+class NotificationListenerViewModel @Inject constructor(private val repository: NotificationListenerRepository) : ViewModel() {
     private val _isEnabled = MutableStateFlow(false)
 
     /**
