@@ -81,19 +81,19 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
         Timber.d("Getting apps from device")
 
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        return context.packageManager
-            .queryIntentActivities(launcherIntent, 0)
-            .distinctBy { it.activityInfo.packageName }
-            .map { resolveInfo ->
-                val applicationInfo = resolveInfo.activityInfo.applicationInfo
+        val resolveInfos = context.packageManager.queryIntentActivities(launcherIntent, 0)
+        val distinctResolveInfos = resolveInfos.distinctBy { it.activityInfo.packageName }
 
-                Timber.d("Getting app: ${applicationInfo.packageName}")
+        return distinctResolveInfos.map { resolveInfo ->
+            val applicationInfo = resolveInfo.activityInfo.applicationInfo
 
-                AppInfo(
-                    applicationInfo.packageName,
-                    applicationInfo.loadLabel(context.packageManager).toString(),
-                    applicationInfo.loadIcon(context.packageManager),
-                )
-            }
+            Timber.d("Getting app: ${applicationInfo.packageName}")
+
+            AppInfo(
+                applicationInfo.packageName,
+                applicationInfo.loadLabel(context.packageManager).toString(),
+                applicationInfo.loadIcon(context.packageManager),
+            )
+        }
     }
 }
