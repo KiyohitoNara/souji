@@ -111,13 +111,12 @@ class AppInfoSharedPreferencesDataSourceTest {
         val results = mutableListOf<List<AppInfo>>()
         val initialEmission = CompletableDeferred<Unit>()
 
-        val job =
-            launch(Dispatchers.IO) {
-                dataSource.apps.take(2).collect {
-                    results.add(it)
-                    initialEmission.complete(Unit)
-                }
+        val job = launch(Dispatchers.IO) {
+            dataSource.apps.take(2).collect {
+                results.add(it)
+                initialEmission.complete(Unit)
             }
+        }
 
         initialEmission.await()
         dataSource.upsertApp(AppInfo("com.example.app1", true))

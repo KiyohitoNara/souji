@@ -34,41 +34,36 @@ import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
 import javax.inject.Inject
 
-open class AppInfoSharedPreferencesDataSource
-@Inject
-constructor(@ApplicationContext private val context: Context) :
-    AppInfoDataSource {
+open class AppInfoSharedPreferencesDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
     companion object {
         const val KEY_APP_PACKAGE_NAMES = "io.github.kiyohitonara.souji.APP_PACKAGE_NAMES"
     }
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    override val apps: Flow<List<AppInfo>> =
-        callbackFlow {
-            // Send the initial value
-            val result = trySend(currentApps())
-            if (result.isFailure) {
-                Timber.e("Failed to send initial value")
-            }
+    override val apps: Flow<List<AppInfo>> = callbackFlow {
+        // Send the initial value
+        val result = trySend(currentApps())
+        if (result.isFailure) {
+            Timber.e("Failed to send initial value")
+        }
 
-            // Listen for changes
-            val listener =
-                SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == KEY_APP_PACKAGE_NAMES) {
-                        val result = trySend(currentApps())
-                        if (result.isFailure) {
-                            Timber.e("Failed to send value")
-                        }
-                    }
+        // Listen for changes
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_APP_PACKAGE_NAMES) {
+                val result = trySend(currentApps())
+                if (result.isFailure) {
+                    Timber.e("Failed to send value")
                 }
-
-            // Register the listener
-            sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-            awaitClose {
-                sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
             }
         }
+
+        // Register the listener
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
 
     override fun currentApps(): List<AppInfo> {
         Timber.d("Getting apps from shared preferences")
@@ -89,14 +84,13 @@ constructor(@ApplicationContext private val context: Context) :
     open suspend fun upsertApp(appInfo: AppInfo) {
         Timber.d("Upserting app: ${appInfo.packageName}")
 
-        val updatedPackageNames =
-            getStoredPackageNames().toMutableSet().apply {
-                if (appInfo.isEnabled) {
-                    add(appInfo.packageName)
-                } else {
-                    remove(appInfo.packageName)
-                }
+        val updatedPackageNames = getStoredPackageNames().toMutableSet().apply {
+            if (appInfo.isEnabled) {
+                add(appInfo.packageName)
+            } else {
+                remove(appInfo.packageName)
             }
+        }
 
         sharedPreferences.edit {
             putStringSet(KEY_APP_PACKAGE_NAMES, updatedPackageNames)
