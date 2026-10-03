@@ -73,7 +73,12 @@ open class SoujiService : NotificationListenerService() {
             if (packageNames.isEmpty()) {
                 emptyMap()
             } else {
-                activeNotifications.groupBy { it.packageName }
+                try {
+                    activeNotifications.groupBy { it.packageName }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to get active notifications")
+                    emptyMap()
+                }
             }
 
         val cancelledCount = packageNames.sumOf { packageName ->
