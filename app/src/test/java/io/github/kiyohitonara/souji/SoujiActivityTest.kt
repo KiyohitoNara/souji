@@ -68,17 +68,16 @@ class SoujiActivityTest {
         val testAppPackageName = "io.github.kiyohitonara.souji"
 
         val countDownLatch = CountDownLatch(1)
-        val receiver =
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
-                        testAppPackageName
-                    ) {
-                        countDownLatch.countDown()
-                    }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                    intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                    testAppPackageName
+                ) {
+                    countDownLatch.countDown()
                 }
             }
+        }
 
         val application = ApplicationProvider.getApplicationContext<Application>()
         val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
