@@ -32,8 +32,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -43,6 +41,8 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)

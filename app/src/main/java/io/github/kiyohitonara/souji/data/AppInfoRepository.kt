@@ -23,10 +23,10 @@
 package io.github.kiyohitonara.souji.data
 
 import io.github.kiyohitonara.souji.model.AppInfo
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import timber.log.Timber
+import javax.inject.Inject
 
 open class AppInfoRepository
 @Inject

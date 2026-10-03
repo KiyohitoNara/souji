@@ -40,8 +40,6 @@ import io.github.kiyohitonara.souji.SoujiService
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import io.github.kiyohitonara.souji.data.NotificationListenerRepository
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertTrue
@@ -53,6 +51,8 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)

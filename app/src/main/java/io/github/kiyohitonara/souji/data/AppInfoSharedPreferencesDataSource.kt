@@ -28,11 +28,11 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.kiyohitonara.souji.model.AppInfo
-import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
+import javax.inject.Inject
 
 open class AppInfoSharedPreferencesDataSource
 @Inject

@@ -27,8 +27,8 @@ import android.content.Intent
 import android.service.notification.NotificationListenerService
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
-import javax.inject.Inject
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 open class SoujiService : NotificationListenerService() {

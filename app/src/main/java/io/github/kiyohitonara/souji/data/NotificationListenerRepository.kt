@@ -25,8 +25,8 @@ package io.github.kiyohitonara.souji.data
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import timber.log.Timber
+import javax.inject.Inject
 
 open class NotificationListenerRepository
 @Inject

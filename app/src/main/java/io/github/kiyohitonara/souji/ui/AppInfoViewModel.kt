@@ -28,12 +28,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kiyohitonara.souji.data.AppInfoRepository
 import io.github.kiyohitonara.souji.di.IoDispatcher
 import io.github.kiyohitonara.souji.model.AppInfo
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 open class AppInfoViewModel
