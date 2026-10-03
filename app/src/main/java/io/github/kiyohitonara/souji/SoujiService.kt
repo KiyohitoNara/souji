@@ -64,10 +64,9 @@ open class SoujiService : NotificationListenerService() {
     private fun cancelActiveNotifications(packageNames: List<String>) {
         Timber.d("Cancelling active notifications")
 
-        val cancelledCount =
-            packageNames.sumOf { packageName ->
-                cancelActiveNotification(packageName)
-            }
+        val cancelledCount = packageNames.sumOf { packageName ->
+            cancelActiveNotification(packageName)
+        }
 
         val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
         intent.setPackage(this.packageName)

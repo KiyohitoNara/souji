@@ -87,17 +87,16 @@ class SoujiServiceTest {
         storeTestAppPackageName()
 
         val countDownLatch = CountDownLatch(1)
-        val receiver =
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
-                        intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
-                        TEST_APP_PACKAGE_NAME
-                    ) {
-                        countDownLatch.countDown()
-                    }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == SoujiService.ACTION_NOTIFICATION_CANCELLED &&
+                    intent.getStringExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME) ==
+                    TEST_APP_PACKAGE_NAME
+                ) {
+                    countDownLatch.countDown()
                 }
             }
+        }
 
         val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATION_CANCELLED)
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
@@ -117,15 +116,14 @@ class SoujiServiceTest {
 
         val countDownLatch = CountDownLatch(1)
         var cancelledCount = -1
-        val receiver =
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    if (intent.action == SoujiService.ACTION_NOTIFICATIONS_CANCELLED) {
-                        cancelledCount = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, -1)
-                        countDownLatch.countDown()
-                    }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == SoujiService.ACTION_NOTIFICATIONS_CANCELLED) {
+                    cancelledCount = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, -1)
+                    countDownLatch.countDown()
                 }
             }
+        }
 
         val intentFilter = IntentFilter(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
         context.registerReceiver(receiver, intentFilter, Context.RECEIVER_EXPORTED)
