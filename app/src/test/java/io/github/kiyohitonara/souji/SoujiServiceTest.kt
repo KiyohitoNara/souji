@@ -38,6 +38,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.mock
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -136,6 +138,21 @@ class SoujiServiceTest {
             context.unregisterReceiver(receiver)
             clearTestAppPackageName()
         }
+    }
+
+    @Test
+    fun onStartCommand_doesNotCrashWhenDataSourceThrows() {
+        val controller =
+            Robolectric
+                .buildService(SoujiService::class.java, Intent(context, SoujiService::class.java))
+                .create()
+        val service = controller.get()
+        service.dataSource =
+            mock {
+                on { currentApps() } doThrow RuntimeException("boom")
+            }
+
+        controller.startCommand(0, 0)
     }
 
     private companion object {

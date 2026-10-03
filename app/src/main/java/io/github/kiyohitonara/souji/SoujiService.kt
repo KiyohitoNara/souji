@@ -53,8 +53,12 @@ open class SoujiService : NotificationListenerService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("Service started")
 
-        val packageNames = dataSource.currentApps().map { it.packageName }
-        cancelActiveNotifications(packageNames)
+        try {
+            val packageNames = dataSource.currentApps().map { it.packageName }
+            cancelActiveNotifications(packageNames)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to cancel notifications")
+        }
 
         stopSelf()
 
@@ -65,7 +69,12 @@ open class SoujiService : NotificationListenerService() {
         Timber.d("Cancelling active notifications")
 
         val cancelledCount = packageNames.sumOf { packageName ->
-            cancelActiveNotification(packageName)
+            try {
+                cancelActiveNotification(packageName)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to cancel active notification: $packageName")
+                0
+            }
         }
 
         val intent = Intent(ACTION_NOTIFICATIONS_CANCELLED)
