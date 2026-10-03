@@ -64,7 +64,7 @@ class AppInfoDeviceDataSourceTest {
     fun currentApps_returnsAppsWithLabel() {
         val apps = dataSource.currentApps()
 
-        assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
+        assertTrue(apps.all { !it.label.isNullOrBlank() })
     }
 
     @Test
@@ -77,11 +77,10 @@ class AppInfoDeviceDataSourceTest {
     @Test
     fun apps_emitsInitialListMatchingCurrentApps() = runBlocking {
         val fromCurrentApps = dataSource.currentApps().map { it.packageName }.sorted()
-        val fromFlow =
-            dataSource.apps
-                .first()
-                .map { it.packageName }
-                .sorted()
+        val fromFlow = dataSource.apps
+            .first()
+            .map { it.packageName }
+            .sorted()
 
         assertEquals(fromCurrentApps, fromFlow)
     }
@@ -97,7 +96,7 @@ class AppInfoDeviceDataSourceTest {
     fun apps_emitsAppsWithLabel() = runBlocking {
         val apps = dataSource.apps.first()
 
-        assertTrue(apps.all { it.label != null && it.label.isNotBlank() })
+        assertTrue(apps.all { !it.label.isNullOrBlank() })
     }
 
     @Test
