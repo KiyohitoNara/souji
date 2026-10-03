@@ -65,7 +65,7 @@ class AppsScreenTest {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "App 1", null, true),
-                AppInfo("com.example.app2", "App 2", null, false)
+                AppInfo("com.example.app2", "App 2", null, false),
             )
         val appInfoViewModel = createViewModel(apps)
 
@@ -96,7 +96,7 @@ class AppsScreenTest {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false)
+                AppInfo("com.example.app2", "Apple", null, false),
             )
         val appInfoViewModel = createViewModel(apps)
 
@@ -113,7 +113,7 @@ class AppsScreenTest {
         val apps =
             listOf(
                 AppInfo("com.example.app1", "Banana", null, false),
-                AppInfo("com.example.app2", "Apple", null, false)
+                AppInfo("com.example.app2", "Apple", null, false),
             )
         val appInfoViewModel = createViewModel(apps)
 

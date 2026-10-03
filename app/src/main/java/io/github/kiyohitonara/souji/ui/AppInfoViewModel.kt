@@ -40,7 +40,7 @@ open class AppInfoViewModel
 @Inject
 constructor(
     private val repository: AppInfoRepository,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     /**
      * A state flow of the list of app information.
@@ -51,7 +51,7 @@ constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
+                initialValue = emptyList(),
             )
 
     /**

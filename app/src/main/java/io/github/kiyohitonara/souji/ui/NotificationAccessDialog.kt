@@ -61,14 +61,14 @@ fun NotificationAccessDialog(notificationListenerViewModel: NotificationListener
                         val settingsIntent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                         context.startActivity(settingsIntent)
                     },
-                    modifier = Modifier.testTag("NotificationAccessDialogConfirmButton")
+                    modifier = Modifier.testTag("NotificationAccessDialogConfirmButton"),
                 ) {
                     Text(stringResource(R.string.setting))
                 }
             },
             modifier = Modifier.testTag("NotificationAccessDialog"),
             title = { Text(stringResource(R.string.notification_access_required)) },
-            text = { Text(stringResource(R.string.notification_access_required_explanation)) }
+            text = { Text(stringResource(R.string.notification_access_required_explanation)) },
         )
     }
 }

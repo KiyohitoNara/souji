@@ -40,44 +40,42 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext private val context: Context) : AppInfoDataSource {
-    override val apps: Flow<List<AppInfo>> =
-        callbackFlow {
-            // Refresh requests are processed one at a time, on a single worker, so that
-            // currentApps() results are always sent in the order they were requested.
-            val refreshRequests = Channel<Unit>(Channel.CONFLATED)
-            launch(Dispatchers.IO) {
-                refreshRequests.consumeEach { _ ->
-                    val result = trySend(currentApps())
-                    if (result.isFailure) {
-                        Timber.e("Failed to send value")
-                    }
+    override val apps: Flow<List<AppInfo>> = callbackFlow {
+        // Refresh requests are processed one at a time, on a single worker, so that
+        // currentApps() results are always sent in the order they were requested.
+        val refreshRequests = Channel<Unit>(Channel.CONFLATED)
+        launch(Dispatchers.IO) {
+            refreshRequests.consumeEach { _ ->
+                val result = trySend(currentApps())
+                if (result.isFailure) {
+                    Timber.e("Failed to send value")
                 }
-            }
-
-            // Request the initial value
-            refreshRequests.trySend(Unit)
-
-            // Listen for changes
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    refreshRequests.trySend(Unit)
-                }
-            }
-
-            // Register the receiver
-            val filter =
-                IntentFilter().apply {
-                    addAction(Intent.ACTION_PACKAGE_ADDED)
-                    addAction(Intent.ACTION_PACKAGE_REMOVED)
-                    addAction(Intent.ACTION_PACKAGE_CHANGED)
-                    addDataScheme("package")
-                }
-            ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-            awaitClose {
-                context.unregisterReceiver(receiver)
-                refreshRequests.close()
             }
         }
+
+        // Request the initial value
+        refreshRequests.trySend(Unit)
+
+        // Listen for changes
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                refreshRequests.trySend(Unit)
+            }
+        }
+
+        // Register the receiver
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+            refreshRequests.close()
+        }
+    }
 
     override fun currentApps(): List<AppInfo> {
         Timber.d("Getting apps from device")
@@ -94,7 +92,7 @@ open class AppInfoDeviceDataSource @Inject constructor(@ApplicationContext priva
                 AppInfo(
                     applicationInfo.packageName,
                     applicationInfo.loadLabel(context.packageManager).toString(),
-                    applicationInfo.loadIcon(context.packageManager)
+                    applicationInfo.loadIcon(context.packageManager),
                 )
             }
     }

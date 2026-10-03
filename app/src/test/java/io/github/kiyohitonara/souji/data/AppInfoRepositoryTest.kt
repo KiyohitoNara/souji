@@ -84,7 +84,7 @@ class AppInfoRepositoryTest {
             listOf(
                 AppInfo("com.example.app1", "Banana", null, false),
                 AppInfo("com.example.app2", "Apple", null, false),
-                AppInfo("com.example.app3", "Cherry", null, false)
+                AppInfo("com.example.app3", "Cherry", null, false),
             )
         whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
         whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))
@@ -101,7 +101,7 @@ class AppInfoRepositoryTest {
         val deviceApps =
             listOf(
                 AppInfo("com.example.app1", null, null, false),
-                AppInfo("com.example.app2", "Apple", null, false)
+                AppInfo("com.example.app2", "Apple", null, false),
             )
         whenever(deviceDataSource.apps).thenReturn(flowOf(deviceApps))
         whenever(sharedPreferencesDataSource.apps).thenReturn(flowOf(emptyList()))

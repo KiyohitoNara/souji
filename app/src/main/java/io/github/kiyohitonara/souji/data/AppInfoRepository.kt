@@ -32,7 +32,7 @@ open class AppInfoRepository
 @Inject
 constructor(
     private val deviceDataSource: AppInfoDeviceDataSource,
-    private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource
+    private val sharedPreferencesDataSource: AppInfoSharedPreferencesDataSource,
 ) {
     private fun mergeApps(deviceApps: List<AppInfo>, prefsApps: List<AppInfo>): List<AppInfo> = deviceApps
         .map { deviceApp ->

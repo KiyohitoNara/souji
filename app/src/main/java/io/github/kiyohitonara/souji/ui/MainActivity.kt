@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
 
                 SoujiApp(
                     notificationListenerViewModel = notificationListenerViewModel,
-                    appInfoViewModel = appInfoViewModel
+                    appInfoViewModel = appInfoViewModel,
                 )
             }
         }
@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
 enum class SoujiScreen(@StringRes val title: Int) {
     Apps(title = R.string.app_name),
-    About(title = R.string.about)
+    About(title = R.string.about),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +116,7 @@ enum class SoujiScreen(@StringRes val title: Int) {
 fun SoujiApp(
     notificationListenerViewModel: NotificationListenerViewModel,
     appInfoViewModel: AppInfoViewModel,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -179,7 +179,7 @@ fun SoujiApp(
                     isSearchActive = !isSearchActive
                     if (!isSearchActive) searchQuery = ""
                 },
-                onSearchQueryChange = { searchQuery = it }
+                onSearchQueryChange = { searchQuery = it },
             )
         },
         floatingActionButton = {
@@ -188,11 +188,11 @@ fun SoujiApp(
                     SoujiService.startService(context)
                 }
             }
-        }
+        },
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = SoujiScreen.Apps.name
+            startDestination = SoujiScreen.Apps.name,
         ) {
             composable(SoujiScreen.Apps.name) {
                 AppsScreen(appInfoViewModel, padding, searchQuery)
@@ -214,7 +214,7 @@ fun SoujiAppBar(
     isSearchActive: Boolean = false,
     searchQuery: String = "",
     onSearchToggle: () -> Unit = {},
-    onSearchQueryChange: (String) -> Unit = {}
+    onSearchQueryChange: (String) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -233,20 +233,20 @@ fun SoujiAppBar(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
                     ),
                     modifier =
                     Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
-                        .testTag("SoujiSearchField")
+                        .testTag("SoujiSearchField"),
                 )
             } else {
                 Text(
                     text = stringResource(currentScreen.title),
                     modifier = Modifier.testTag("SoujiAppBarTitle"),
                     overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
+                    maxLines = 1,
                 )
             }
         },
@@ -255,21 +255,21 @@ fun SoujiAppBar(
             if (isSearchActive && currentScreen == SoujiScreen.Apps) {
                 IconButton(
                     onClick = onSearchToggle,
-                    modifier = Modifier.testTag("SoujiAppBarCloseSearchButton")
+                    modifier = Modifier.testTag("SoujiAppBarCloseSearchButton"),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(R.string.close_search)
+                        contentDescription = stringResource(R.string.close_search),
                     )
                 }
             } else if (canNavigateBack) {
                 IconButton(
                     onClick = { navigateUp() },
-                    modifier = Modifier.testTag("SoujiAppBarNavigationButton")
+                    modifier = Modifier.testTag("SoujiAppBarNavigationButton"),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back)
+                        contentDescription = stringResource(R.string.back),
                     )
                 }
             }
@@ -281,11 +281,11 @@ fun SoujiAppBar(
                         Timber.i("SoujiAppBarSearchButton clicked")
                         onSearchToggle()
                     },
-                    modifier = Modifier.testTag("SoujiAppBarSearchButton")
+                    modifier = Modifier.testTag("SoujiAppBarSearchButton"),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(R.string.search)
+                        contentDescription = stringResource(R.string.search),
                     )
                 }
                 IconButton(
@@ -294,16 +294,16 @@ fun SoujiAppBar(
 
                         expanded = expanded.not()
                     },
-                    modifier = Modifier.testTag("SoujiAppBarMenuButton")
+                    modifier = Modifier.testTag("SoujiAppBarMenuButton"),
                 ) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.more)
+                        contentDescription = stringResource(R.string.more),
                     )
                 }
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.about)) },
@@ -313,7 +313,7 @@ fun SoujiAppBar(
                             expanded = false
                             navigateTo(SoujiScreen.About)
                         },
-                        modifier = Modifier.testTag("SoujiAppBarAboutMenuItem")
+                        modifier = Modifier.testTag("SoujiAppBarAboutMenuItem"),
                     )
                 }
             }
@@ -321,8 +321,8 @@ fun SoujiAppBar(
         colors =
         TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.primary
-        )
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
     )
 }
 
@@ -331,11 +331,11 @@ fun SoujiAppBar(
 fun SoujiFloatingActionButton(onClick: () -> Unit) {
     FloatingActionButton(
         onClick = onClick,
-        modifier = Modifier.testTag("SoujiFloatingActionButton")
+        modifier = Modifier.testTag("SoujiFloatingActionButton"),
     ) {
         Icon(
             imageVector = Icons.Default.CleaningServices,
-            contentDescription = stringResource(R.string.clean)
+            contentDescription = stringResource(R.string.clean),
         )
     }
 }

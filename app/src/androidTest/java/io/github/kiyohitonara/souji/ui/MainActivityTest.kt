@@ -87,7 +87,7 @@ class MainActivityTest {
         composeTestRule.setContent {
             SoujiApp(
                 notificationListenerViewModel = notificationListenerViewModel,
-                appInfoViewModel = appInfoViewModel
+                appInfoViewModel = appInfoViewModel,
             )
         }
     }
@@ -144,7 +144,7 @@ class MainActivityTest {
             .edit()
             .putStringSet(
                 AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES,
-                setOf("io.github.kiyohitonara.souji")
+                setOf("io.github.kiyohitonara.souji"),
             ).commit()
 
         val countDownLatch = CountDownLatch(1)

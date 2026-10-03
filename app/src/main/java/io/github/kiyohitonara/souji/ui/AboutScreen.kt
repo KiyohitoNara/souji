@@ -38,6 +38,6 @@ fun AboutScreen(contentPadding: PaddingValues = PaddingValues(0.dp)) {
     LibrariesContainer(
         libraries = libraries,
         modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding
+        contentPadding = contentPadding,
     )
 }
