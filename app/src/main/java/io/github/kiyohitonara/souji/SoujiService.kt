@@ -25,6 +25,7 @@ package io.github.kiyohitonara.souji
 import android.content.Context
 import android.content.Intent
 import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.kiyohitonara.souji.data.AppInfoSharedPreferencesDataSource
 import timber.log.Timber
@@ -68,9 +69,16 @@ open class SoujiService : NotificationListenerService() {
     private fun cancelActiveNotifications(packageNames: List<String>) {
         Timber.d("Cancelling active notifications")
 
+        val notificationsByPackageName =
+            if (packageNames.isEmpty()) {
+                emptyMap()
+            } else {
+                activeNotifications.groupBy { it.packageName }
+            }
+
         val cancelledCount = packageNames.sumOf { packageName ->
             try {
-                cancelActiveNotification(packageName)
+                cancelActiveNotification(packageName, notificationsByPackageName[packageName].orEmpty())
             } catch (e: Exception) {
                 Timber.e(e, "Failed to cancel active notification: $packageName")
                 0
@@ -84,11 +92,10 @@ open class SoujiService : NotificationListenerService() {
         sendBroadcast(intent)
     }
 
-    private fun cancelActiveNotification(packageName: String): Int {
+    private fun cancelActiveNotification(packageName: String, notifications: List<StatusBarNotification>): Int {
         Timber.d("Cancelling active notification: $packageName")
 
-        val cancellableNotifications = activeNotifications.filter { it.packageName == packageName }
-        cancellableNotifications.forEach { notification ->
+        notifications.forEach { notification ->
             cancelNotification(notification.key)
         }
 
@@ -97,6 +104,6 @@ open class SoujiService : NotificationListenerService() {
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME, packageName)
         sendBroadcast(intent)
 
-        return cancellableNotifications.size
+        return notifications.size
     }
 }
