@@ -23,8 +23,19 @@
 package io.github.kiyohitonara.souji.data
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
+import android.content.pm.ResolveInfo
+import android.net.Uri
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import io.github.kiyohitonara.souji.model.AppInfo
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -34,6 +45,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
 class AppInfoDeviceDataSourceTest {
@@ -104,5 +116,99 @@ class AppInfoDeviceDataSourceTest {
         val apps = dataSource.apps.first()
 
         assertNotNull(apps.find { it.packageName == context.packageName })
+    }
+
+    private fun installLauncherApp(packageName: String) {
+        val applicationInfo =
+            ApplicationInfo().apply {
+                this.packageName = packageName
+            }
+        val activityInfo =
+            ActivityInfo().apply {
+                this.packageName = packageName
+                name = "MainActivity"
+                this.applicationInfo = applicationInfo
+            }
+        val resolveInfo = ResolveInfo().apply { this.activityInfo = activityInfo }
+
+        val shadowPackageManager = shadowOf(context.packageManager)
+        // currentApps() queries without a package filter, while resolveApp() queries with one;
+        // register both so the fake app is visible to each.
+        shadowPackageManager.addResolveInfoForIntent(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+            resolveInfo,
+        )
+        shadowPackageManager.addResolveInfoForIntent(
+            Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .setPackage(packageName),
+            resolveInfo,
+        )
+    }
+
+    private fun uninstallLauncherApp(packageName: String) {
+        val shadowPackageManager = shadowOf(context.packageManager)
+        shadowPackageManager.removeResolveInfosForIntent(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+            packageName,
+        )
+        shadowPackageManager.removeResolveInfosForIntent(
+            Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .setPackage(packageName),
+            packageName,
+        )
+        shadowPackageManager.removePackage(packageName)
+    }
+
+    @Test
+    fun apps_addsNewlyInstalledPackage() = runBlocking {
+        val newPackageName = "com.example.newapp"
+
+        val results = mutableListOf<List<AppInfo>>()
+        val initialEmission = CompletableDeferred<Unit>()
+        val job =
+            launch(Dispatchers.IO) {
+                dataSource.apps.take(2).collect {
+                    results.add(it)
+                    initialEmission.complete(Unit)
+                }
+            }
+
+        initialEmission.await()
+        installLauncherApp(newPackageName)
+        context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_ADDED, Uri.parse("package:$newPackageName")))
+        shadowOf(Looper.getMainLooper()).idle()
+        job.join()
+
+        assertEquals(2, results.size)
+        assertFalse(results[0].any { it.packageName == newPackageName })
+        assertTrue(results[1].any { it.packageName == newPackageName })
+    }
+
+    @Test
+    fun apps_removesUninstalledPackage() = runBlocking {
+        val newPackageName = "com.example.newapp"
+        installLauncherApp(newPackageName)
+
+        val results = mutableListOf<List<AppInfo>>()
+        val initialEmission = CompletableDeferred<Unit>()
+        val job =
+            launch(Dispatchers.IO) {
+                dataSource.apps.take(2).collect {
+                    results.add(it)
+                    initialEmission.complete(Unit)
+                }
+            }
+
+        initialEmission.await()
+        uninstallLauncherApp(newPackageName)
+        context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_REMOVED, Uri.parse("package:$newPackageName")))
+        shadowOf(Looper.getMainLooper()).idle()
+        job.join()
+
+        assertEquals(2, results.size)
+        assertTrue(results[0].any { it.packageName == newPackageName })
+        assertFalse(results[1].any { it.packageName == newPackageName })
     }
 }
