@@ -38,6 +38,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -88,7 +89,7 @@ class AppsScreenTest {
             }
 
             composeTestRule.onNodeWithTag("AppListItemSwitch_com.example.app").performClick()
-            verify(appInfoRepository).upsertApp(app.copy(isEnabled = true))
+            verify(appInfoRepository, timeout(1000)).upsertApp(app.copy(isEnabled = true))
         }
 
     @Test
