@@ -180,7 +180,11 @@ class AppInfoDeviceDataSourceTest {
         installLauncherApp(newPackageName)
         context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_ADDED, Uri.parse("package:$newPackageName")))
         shadowOf(Looper.getMainLooper()).idle()
-        withTimeout(5000) { job.join() }
+        try {
+            withTimeout(5000) { job.join() }
+        } finally {
+            job.cancel()
+        }
 
         assertEquals(2, results.size)
         assertFalse(results[0].any { it.packageName == newPackageName })
@@ -206,7 +210,11 @@ class AppInfoDeviceDataSourceTest {
         uninstallLauncherApp(newPackageName)
         context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_REMOVED, Uri.parse("package:$newPackageName")))
         shadowOf(Looper.getMainLooper()).idle()
-        withTimeout(5000) { job.join() }
+        try {
+            withTimeout(5000) { job.join() }
+        } finally {
+            job.cancel()
+        }
 
         assertEquals(2, results.size)
         assertTrue(results[0].any { it.packageName == newPackageName })

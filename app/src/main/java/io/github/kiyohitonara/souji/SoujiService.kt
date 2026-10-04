@@ -44,6 +44,7 @@ open class SoujiService : NotificationListenerService() {
         const val EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAME =
             "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_PACKAGE_NAME"
         const val EXTRA_CANCELLED_NOTIFICATION_COUNT = "io.github.kiyohitonara.souji.CANCELLED_NOTIFICATION_COUNT"
+        const val EXTRA_NOTIFICATION_LOOKUP_FAILED = "io.github.kiyohitonara.souji.NOTIFICATION_LOOKUP_FAILED"
 
         /** Starts the service to cancel notifications for enabled apps. */
         fun startService(context: Context) {
@@ -77,13 +78,13 @@ open class SoujiService : NotificationListenerService() {
                     activeNotifications.groupBy { it.packageName }
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to get active notifications")
-                    emptyMap()
+                    null
                 }
             }
 
         val cancelledCount = packageNames.sumOf { packageName ->
             try {
-                cancelActiveNotification(packageName, notificationsByPackageName[packageName].orEmpty())
+                cancelActiveNotification(packageName, notificationsByPackageName?.get(packageName).orEmpty())
             } catch (e: Exception) {
                 Timber.e(e, "Failed to cancel active notification: $packageName")
                 0
@@ -94,6 +95,7 @@ open class SoujiService : NotificationListenerService() {
         intent.setPackage(this.packageName)
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_PACKAGE_NAMES, packageNames.toTypedArray())
         intent.putExtra(EXTRA_CANCELLED_NOTIFICATION_COUNT, cancelledCount)
+        intent.putExtra(EXTRA_NOTIFICATION_LOOKUP_FAILED, notificationsByPackageName == null)
         sendBroadcast(intent)
     }
 
