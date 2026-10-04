@@ -29,6 +29,7 @@ import android.content.IntentFilter
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -191,6 +192,12 @@ class MainActivityTest {
         intent.putExtra(SoujiService.EXTRA_NOTIFICATION_LOOKUP_FAILED, true)
         context.sendBroadcast(intent)
 
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            composeTestRule
+                .onAllNodesWithText("Failed to clean up notifications")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeTestRule.onNodeWithText("Failed to clean up notifications").assertIsDisplayed()
     }
 }
