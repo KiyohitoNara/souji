@@ -39,6 +39,7 @@
         <item quantity="one">Cleaned up %d notification</item>
         <item quantity="other">Cleaned up %d notifications</item>
     </plurals>
+    <string name="apps_notifications_cleanup_failed">Failed to clean up notifications</string>
 
     <!-- Notification access dialog -->
     <string name="notification_access_dialog_title">Notification access required</string>

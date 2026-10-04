@@ -30,6 +30,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ApplicationProvider
@@ -176,5 +177,20 @@ class MainActivityTest {
                 .remove(AppInfoSharedPreferencesDataSource.KEY_APP_PACKAGE_NAMES)
                 .commit()
         }
+    }
+
+    @Test
+    fun soujiApp_notificationLookupFailedBroadcast_showsFailureSnackbar() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        setSoujiAppContent()
+
+        val intent = Intent(SoujiService.ACTION_NOTIFICATIONS_CANCELLED)
+        intent.setPackage(context.packageName)
+        intent.putExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
+        intent.putExtra(SoujiService.EXTRA_NOTIFICATION_LOOKUP_FAILED, true)
+        context.sendBroadcast(intent)
+
+        composeTestRule.onNodeWithText("Failed to clean up notifications").assertIsDisplayed()
     }
 }

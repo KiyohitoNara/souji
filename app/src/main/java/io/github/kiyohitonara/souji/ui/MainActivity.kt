@@ -129,8 +129,11 @@ fun SoujiApp(
             override fun onReceive(receiverContext: Context, intent: Intent) {
                 Timber.i("Notifications-cancelled broadcast received")
 
+                val lookupFailed = intent.getBooleanExtra(SoujiService.EXTRA_NOTIFICATION_LOOKUP_FAILED, false)
                 val count = intent.getIntExtra(SoujiService.EXTRA_CANCELLED_NOTIFICATION_COUNT, 0)
-                val message = if (count == 0) {
+                val message = if (lookupFailed) {
+                    resources.getString(R.string.apps_notifications_cleanup_failed)
+                } else if (count == 0) {
                     resources.getString(R.string.apps_notifications_cleaned_none)
                 } else {
                     resources.getQuantityString(R.plurals.apps_notifications_cleaned, count, count)
