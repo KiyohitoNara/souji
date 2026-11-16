@@ -47,7 +47,7 @@ android {
     }
     signingConfigs {
         create("release") {
-            storeFile = rootProject.file("souji_release.keystore")
+            storeFile = rootProject.file("souji_release.jks")
             storePassword = System.getenv("STORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEY_PASSWORD")

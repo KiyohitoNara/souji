@@ -30,7 +30,7 @@ jobs:
           echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Decode release keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > souji_release.keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > souji_release.jks
 
       - name: Build release APK
         env:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Remove keystore
         if: always()
-        run: rm -f souji_release.keystore
+        run: rm -f souji_release.jks
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
