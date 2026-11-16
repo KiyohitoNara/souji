@@ -1,0 +1,8 @@
+# Template for the release signing environment variables.
+#
+# Copy this file to .envrc, fill in the values, and run `direnv allow`.
+# The keystore itself is expected at ./souji_release.jks (ignored by git).
+
+export STORE_PASSWORD="change-me"
+export KEY_ALIAS="change-me"
+export KEY_PASSWORD="change-me"
