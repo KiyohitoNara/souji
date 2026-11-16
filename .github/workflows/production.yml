@@ -53,6 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version-name }}
+          target_commitish: ${{ github.sha }}
           name: v${{ steps.version.outputs.version-name }}
           files: app/build/outputs/apk/release/*.apk
         env:
