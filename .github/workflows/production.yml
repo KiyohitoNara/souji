@@ -34,16 +34,21 @@ jobs:
           echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Verify release tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # An existing tag keeps its commit, so reusing a version for another commit would mislabel the APK.
+          # A failed lookup stops the step, so only a confirmed missing tag lets the release continue.
           TAG="v${{ steps.version.outputs.version-name }}"
-          if TAG_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${TAG}" --jq '.sha' 2> /dev/null); then
-            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
-              echo "::error::Tag ${TAG} already points to ${TAG_SHA}. Bump the version to release ${GITHUB_SHA}."
-              exit 1
-            fi
+          TAG_REFS=$(git ls-remote --tags origin "refs/tags/${TAG}" "refs/tags/${TAG}^{}")
+          if [ -z "$TAG_REFS" ]; then
+            echo "Tag ${TAG} does not exist yet."
+            exit 0
+          fi
+
+          # The last line is the commit the tag resolves to, also for annotated tags.
+          TAG_SHA=$(echo "$TAG_REFS" | awk 'END { print $1 }')
+          if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Tag ${TAG} already points to ${TAG_SHA}. Bump the version to release ${GITHUB_SHA}."
+            exit 1
           fi
 
       - name: Decode release keystore
