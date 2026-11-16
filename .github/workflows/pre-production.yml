@@ -98,8 +98,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Skip when pre-production has advanced past the commit that passed the checks.
+          # The run triggered by the newer push is responsible for creating the PR.
+          LATEST_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/pre-production" --jq '.object.sha')
+          if [ "$LATEST_SHA" != "$GITHUB_SHA" ]; then
+            echo "pre-production moved from $GITHUB_SHA to $LATEST_SHA. Skipping PR creation for the stale run."
+            exit 0
+          fi
+
           TITLE="Release v${{ steps.version.outputs.version-name }}"
-          BODY="Automated release PR. All pre-production checks (lint, unit tests, instrumented tests) passed for version ${{ steps.version.outputs.version-name }} (versionCode ${{ steps.version.outputs.version-code }})."
+          BODY="Automated release PR. All pre-production checks (lint, unit tests, instrumented tests) passed for commit ${GITHUB_SHA} (version ${{ steps.version.outputs.version-name }}, versionCode ${{ steps.version.outputs.version-code }})."
           EXISTING=$(gh pr list --base production --head pre-production --state open --json number --jq '.[0].number')
           if [ -z "$EXISTING" ]; then
             gh pr create \
