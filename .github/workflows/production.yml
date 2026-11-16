@@ -4,6 +4,10 @@ on:
   push:
     branches: [production]
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -28,6 +32,19 @@ jobs:
         run: |
           VERSION_NAME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
           echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # An existing tag keeps its commit, so reusing a version for another commit would mislabel the APK.
+          TAG="v${{ steps.version.outputs.version-name }}"
+          if TAG_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${TAG}" --jq '.sha' 2> /dev/null); then
+            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag ${TAG} already points to ${TAG_SHA}. Bump the version to release ${GITHUB_SHA}."
+              exit 1
+            fi
+          fi
 
       - name: Decode release keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > souji_release.jks
