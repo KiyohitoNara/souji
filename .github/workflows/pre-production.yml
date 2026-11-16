@@ -103,12 +103,26 @@ jobs:
         run: |
           # The PR head is a branch pinned to the commit that passed the checks.
           # Pointing the PR at the moving pre-production branch could release commits that were never checked.
-          # Runs of this workflow are serialized, so the candidate branch only ever moves forward.
+          # The candidate branch only moves forward, so a rerun of an older commit cannot roll it back.
           CANDIDATE_BRANCH="release/candidate"
-          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${CANDIDATE_BRANCH}" > /dev/null 2>&1; then
+          if CURRENT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${CANDIDATE_BRANCH}" --jq '.object.sha' 2> /dev/null); then
+            RELATION=$(gh api "repos/${GITHUB_REPOSITORY}/compare/${CURRENT_SHA}...${GITHUB_SHA}" --jq '.status')
+            case "$RELATION" in
+              identical | ahead)
+                ;;
+              behind)
+                echo "${CANDIDATE_BRANCH} (${CURRENT_SHA}) is already ahead of ${GITHUB_SHA}. Skipping the stale run."
+                exit 0
+                ;;
+              *)
+                echo "::error::${GITHUB_SHA} diverges from ${CANDIDATE_BRANCH} (${CURRENT_SHA}). Resolve it manually."
+                exit 1
+                ;;
+            esac
+
             gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/${CANDIDATE_BRANCH}" \
               -f sha="$GITHUB_SHA" \
-              -F force=true
+              -F force=false
           else
             gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
               -f ref="refs/heads/${CANDIDATE_BRANCH}" \
