@@ -82,7 +82,6 @@ jobs:
   build-release:
     needs: [lint, unit-test, instrumented-test]
     runs-on: ubuntu-24.04
-    environment: production
     permissions:
       contents: write
     steps:
