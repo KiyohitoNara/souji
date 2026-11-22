@@ -21,6 +21,12 @@
 
 This project follows GitLab Flow.
 
+- `master`: Daily development.
+- `pre-production`: Merge `master` to release a beta build. Bump the version (e.g. `1.2.0-beta.1`) manually with a commit on this branch.
+- `production`: Merge `pre-production` to release a stable build. Bump the version (e.g. `1.2.0`) manually with a commit on this branch.
+
+After each release, merge `production` back into `master`.
+
 ### Development Commands
 
 **Build:**
