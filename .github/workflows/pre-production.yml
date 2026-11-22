@@ -12,6 +12,19 @@ permissions:
   contents: read
 
 jobs:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version-name: ${{ steps.version.outputs.version-name }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION_NAME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
   lint:
     runs-on: ubuntu-24.04
     steps:
@@ -80,8 +93,11 @@ jobs:
           script: ./gradlew connectedAndroidTest
 
   build-release:
-    needs: [lint, unit-test, instrumented-test]
+    needs: [version, lint, unit-test, instrumented-test]
     runs-on: ubuntu-24.04
+    concurrency:
+      group: release-${{ needs.version.outputs.version-name }}
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -96,17 +112,11 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Read version
-        id: version
-        run: |
-          VERSION_NAME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
-          echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
-
       - name: Verify release tag
         run: |
           # An existing tag keeps its commit, so reusing a version for another commit would mislabel the APK.
           # A failed lookup stops the step, so only a confirmed missing tag lets the release continue.
-          TAG="v${{ steps.version.outputs.version-name }}"
+          TAG="v${{ needs.version.outputs.version-name }}"
           TAG_REFS=$(git ls-remote --tags origin "refs/tags/${TAG}" "refs/tags/${TAG}^{}")
           if [ -z "$TAG_REFS" ]; then
             echo "Tag ${TAG} does not exist yet."
@@ -137,15 +147,15 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: souji-${{ steps.version.outputs.version-name }}
+          name: souji-${{ needs.version.outputs.version-name }}
           path: app/build/outputs/apk/release/*.apk
 
       - name: Create GitHub pre-release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v${{ steps.version.outputs.version-name }}
+          tag_name: v${{ needs.version.outputs.version-name }}
           target_commitish: ${{ github.sha }}
-          name: v${{ steps.version.outputs.version-name }}
+          name: v${{ needs.version.outputs.version-name }}
           prerelease: true
           files: app/build/outputs/apk/release/*.apk
         env:
