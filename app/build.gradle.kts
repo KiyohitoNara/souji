@@ -37,8 +37,8 @@ android {
         applicationId = "io.github.kiyohitonara.souji"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0-beta.1"
 
         testInstrumentationRunner = "io.github.kiyohitonara.souji.CustomTestRunner"
         vectorDrawables {
